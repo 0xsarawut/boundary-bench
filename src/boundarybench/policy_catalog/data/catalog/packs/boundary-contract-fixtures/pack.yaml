@@ -1,0 +1,175 @@
+catalog_schema_version: 1
+pack_id: boundary-contract-fixtures
+title: BoundaryBench canonical policy contract fixtures
+version: 0.1.0
+description: >
+  Minimal native policy fixtures for validating the canonical catalog schema and
+  daytona-hardening-v1 compiler contract. These fixtures are contract examples,
+  not supported runtime policy selectors.
+source:
+  framework: native/boundary
+  inspected_date: "2026-06-27"
+  provenance_note: >
+    Authored as a BoundaryBench-owned contract fixture. Runtime
+    selectors are owned by the benchmark policy registry.
+  source_paths:
+    - src/boundarybench/benchmarks/common/policies.py
+    - src/boundarybench/daytona/hardening_config.py
+policies:
+  - policy_id: contract-smoke-enterprise-shape
+    family: native/boundary
+    title: Enterprise-shaped Daytona v1 smoke policy
+    description: >
+      Small policy that exercises each currently supported Daytona hardening
+      field without claiming to be a supported runtime policy selector.
+    variants:
+      - variant_id: daytona-smoke-v1
+        title: Daytona hardening v1 smoke
+        fidelity: runtime_enforced_partial
+        description: >
+          Compiles to the current Daytona hardening payload shape. Runtime
+          enforcement still depends on boundarybench applying the payload.
+        runtime_targets:
+          - target: daytona-hardening-v1
+            capability_set: daytona-hardening-v1
+        unsupported_features:
+          - surface: full_mac_enforcement
+            reason: daytona-hardening-v1 does not configure SELinux or AppArmor.
+            missing_surface: full MAC policy engine
+            verification_hint: Covered by future runtime hardening work, not this fixture.
+          - surface: full_auditd_compliance_evidence
+            reason: Fixture probes are not auditd or compliance evidence.
+            missing_surface: auditd/compliance evidence collection
+            verification_hint: Live Daytona evidence is collected separately, not by this fixture.
+        rules:
+          - rule_id: deny-admin-network-command-names
+            title: Deny selected admin and network command names
+            description: >
+              Blocks common package, network, and control-plane command names
+              through policy bin wrappers.
+            intended_effect: Prevent direct use of selected high-risk tools.
+            source_refs:
+              - framework: native/boundary
+                control_id: enterprise-shaped-command-deny
+                title: Enterprise-shaped command-name denials
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: enforced
+                values:
+                  - apt
+                  - apt-get
+                  - curl
+                  - docker
+                  - gh
+                  - kubectl
+                  - sudo
+                  - wget
+                verification_hint: Run each command name and expect the policy wrapper denial message.
+              - target: daytona-hardening-v1
+                surface: argument_aware_command_restriction
+                status: unsupported
+                values:
+                  - apt-get install
+                  - docker run
+                reason: Daytona v1 denies command names, not selected argv patterns.
+                missing_surface: argument-aware command policy
+                verification_hint: Do not claim argv-sensitive enforcement until boundarybench implements it.
+            verification_hints:
+              - PATH should resolve these names to the policy bin directory before system paths.
+          - rule_id: deny-absolute-exec-paths
+            title: Deny selected absolute executable paths
+            description: >
+              Blocks selected binary paths through Daytona bind-denied exec
+              overlays.
+            intended_effect: Prevent bypassing command-name wrappers through absolute paths.
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: denied_exec_path
+                status: enforced
+                values:
+                  - /usr/bin/curl
+                  - /usr/bin/sudo
+                  - /usr/bin/wget
+                verification_hint: Execute each absolute path and expect denial.
+          - rule_id: deny-sensitive-paths
+            title: Deny representative sensitive path access and tee writes
+            description: >
+              Exercises exact and prefix path access denial plus tee
+              write-pattern denial. These are Daytona hardening surfaces, not
+              full MAC or operation-specific read/write policy.
+            intended_effect: Prevent access to selected sensitive paths.
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: denied_path_exact
+                status: enforced
+                values:
+                  - /etc/shadow
+                verification_hint: Attempt to open the exact path under the Daytona hardening wrapper.
+              - target: daytona-hardening-v1
+                surface: denied_path_prefix
+                status: enforced
+                values:
+                  - /root/
+                  - /etc/
+                verification_hint: Attempt to open a path below each prefix under the Daytona hardening wrapper.
+              - target: daytona-hardening-v1
+                surface: denied_write_pattern
+                status: enforced
+                values:
+                  - /etc/*
+                  - /root/*
+                verification_hint: Pipe data through tee to a denied path and expect denial.
+              - target: daytona-hardening-v1
+                surface: operation_specific_path_mode_policy
+                status: unsupported
+                values:
+                  - read-only /etc/shadow
+                  - write-only /etc/
+                reason: Daytona v1 path exact/prefix denial blocks access by path, not read-only or write-only modes.
+                missing_surface: operation-specific path mode policy
+                verification_hint: Do not claim read/write mode granularity for this target.
+          - rule_id: strip-sensitive-environment
+            title: Strip selected sensitive environment variables
+            description: Removes selected credential-like environment variables before execution.
+            intended_effect: Prevent direct child-process access to selected secrets.
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: env_var_strip
+                status: enforced
+                values:
+                  - AWS_SECRET_ACCESS_KEY
+                  - OPENAI_API_KEY
+                  - OPENROUTER_API_KEY
+                verification_hint: Inspect the runtime shell environment and /proc/self/environ.
+          - rule_id: non-root-and-child-network
+            title: Run as non-root and block selected child-process egress
+            description: >
+              Exercises non-root execution and child-process non-loopback network
+              blocking for selected command names.
+            intended_effect: Reduce privilege and block selected child tool egress.
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: non_root_user
+                status: enforced
+                values:
+                  - daytona
+                verification_hint: Run id -u and sudo -n true under the hardening wrapper.
+              - target: daytona-hardening-v1
+                surface: child_process_network_block
+                status: enforced
+                values:
+                  - bash
+                  - curl
+                  - python3
+                  - sh
+                  - wget
+                verification_hint: Launch a listed child command and attempt non-loopback TCP egress.
+              - target: daytona-hardening-v1
+                surface: domain_egress_policy
+                status: unsupported
+                values:
+                  - example.com
+                reason: Daytona v1 only exposes coarse non-loopback blocking, not domain rules.
+                missing_surface: domain-aware egress policy
+                verification_hint: Do not claim domain-specific egress enforcement for this target.

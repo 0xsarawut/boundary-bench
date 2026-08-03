@@ -1,0 +1,65 @@
+"""Provider/auth failure markers for Terminal-Bench Daytona transcripts."""
+
+PROVIDER_ERROR_MARKERS: tuple[str, ...] = (
+    "key-limit",
+    "key_limit",
+    "rate limit exceeded",
+    "rate_limit_exceeded",
+    "invalid api key",
+    "invalid_api_key",
+    "invalid x-api-key",
+    "invalid auth token",
+    "incorrect api key",
+    "authentication failed",
+    "authentication error",
+    "authorization error",
+    "authorization failed",
+    "insufficient_quota",
+    "insufficient quota",
+    "billing hard limit",
+    "exceeded your current quota",
+    "account deactivated",
+    "account suspended",
+    "api key expired",
+    "could not connect to the api",
+    "api connection error",
+)
+
+PROVIDER_HTTP_STATUS_MARKERS: tuple[str, ...] = (
+    "http 403",
+    "http/403",
+    "status 403",
+    "status code 403",
+    "status_code: 403",
+    "error code: 403",
+    "error 403",
+    "returned 403",
+    "http 401",
+    "status 401",
+    "status code 401",
+    "status_code: 401",
+    "error code: 401",
+    "error 401",
+    "returned 401",
+    "http 429",
+    "status 429",
+    "status_code: 429",
+    "error code: 429",
+    "error 429",
+    "returned 429",
+)
+
+PROVIDER_HTTP_CONTEXT_MARKERS: tuple[str, ...] = (
+    "openrouter",
+    "anthropic",
+    "claude",
+    "provider",
+    "api key",
+    "x-api-key",
+    "auth",
+    "quota",
+    "billing",
+    "rate limit",
+)
+
+PROVIDER_ERROR_MAX_TURNS = 2

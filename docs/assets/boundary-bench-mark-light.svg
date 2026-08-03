@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112" width="112" height="112">
+  <g stroke="#353535" stroke-linecap="butt" stroke-linejoin="round" stroke-width="9.285714" shape-rendering="geometricPrecision">
+    <polygon fill="#353535" stroke="none" points="7.639,98.689 34.031,72.298 27.702,65.969 1.311,92.361"/>
+    <polygon fill="#353535" stroke="none" points="98.689,92.361 72.298,65.969 65.969,72.298 92.361,98.689"/>
+    <polygon fill="#353535" stroke="none" points="92.361,1.311 65.969,27.702 72.298,34.031 98.689,7.639"/>
+    <polygon fill="#353535" stroke="none" points="1.311,7.639 27.702,34.031 34.031,27.702 7.639,1.311"/>
+    <path fill="none" d="M 4.475,95.525 L 95.525,95.525 L 95.525,4.475 L 4.475,4.475 Z"/>
+    <path fill="none" d="M 30.866,69.134 L 69.134,69.134 L 69.134,30.866 L 30.866,30.866 Z"/>
+  </g>
+</svg>

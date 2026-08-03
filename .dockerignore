@@ -1,0 +1,18 @@
+.git
+.venv
+.pytest_cache
+.ruff_cache
+__pycache__
+*.pyc
+logs
+.mypy_cache
+.DS_Store
+
+# Never bake secrets or local credentials into an image layer.
+.env
+.env.*
+*.pem
+*.key
+*-key.json
+secrets/
+*.eval

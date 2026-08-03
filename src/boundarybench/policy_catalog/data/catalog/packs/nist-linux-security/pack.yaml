@@ -1,0 +1,1540 @@
+catalog_schema_version: 1
+pack_id: nist-linux-security
+title: NIST linux_security derived canonical policy catalog
+version: 0.2.0
+description: >
+  Canonical representation of usnistgov/linux_security-derived High, Medium, and
+  Low impact baselines projected onto Daytona v1 runtime hardening primitives.
+  This pack records provenance, lossiness, runtime-enforced Daytona primitives,
+  and unsupported controls without making a NIST compliance claim.
+source:
+  framework: NIST 800-53r5 via usnistgov/linux_security
+  upstream_url: https://github.com/usnistgov/linux_security
+  upstream_commit: 671b07e07ec800f03c3bf94b873299f4d71c9b0f
+  inspected_date: "2026-06-25"
+  provenance_note: >
+    Derived from usnistgov/linux_security source material for benchmark policy
+    representation. This catalog is not a SCAP, DISA, CIS, audit, or live OS
+    enforcement claim.
+  source_paths:
+    - README.adoc
+    - includes/scplinux-data.yaml
+    - includes/800-53_baselines.yaml
+    - legacy/rules/
+metadata:
+  selection_basis: largest_supported_converted_denial_surface
+policies:
+  - policy_id: nist-linux-80053-high-derived
+    family: nist-linux-security
+    title: NIST 800-53r5 High derived benchmark representation
+    description: >
+      Partial source-derived representation of selected High-impact controls
+      projected onto BoundaryBench agent hardening surfaces.
+    variants:
+      - variant_id: high-derived-daytona-contract-v1
+        title: High derived Daytona contract placeholder
+        fidelity: source_derived_partial
+        description: >
+          Captures which controls can be represented today and which must remain
+          unsupported or approximate in the source-derived fixture. The
+          separate runtime profile below compiles supported Daytona primitives.
+        runtime_targets:
+          - target: daytona-hardening-v1
+            capability_set: daytona-hardening-v1
+        unsupported_features:
+          - surface: full_mac_enforcement
+            reason: usnistgov/linux_security includes controls outside Daytona v1 MAC capabilities.
+            missing_surface: SELinux/AppArmor policy compiler and runtime proof
+            verification_hint: A future runtime target must define MAC policy before claiming this.
+          - surface: full_auditd_compliance_evidence
+            reason: Catalog metadata and local probes are not auditd evidence.
+            missing_surface: auditd collection, retention, and compliance evidence contract
+            verification_hint: Live evidence is collected separately.
+          - surface: full_nist_compliance
+            reason: A benchmark representation does not establish organizational control compliance.
+            missing_surface: complete compliance scope, evidence, and assessment process
+            verification_hint: Use only derived/partial language for this catalog.
+        rules:
+          - rule_id: restrict-admin-package-and-service-tools
+            title: Represent admin, package, and service mutation restrictions
+            description: >
+              Converts selected administrative and mutation-oriented controls
+              into broad command-name denials where Daytona v1 has a matching
+              primitive.
+            intended_effect: Reduce agent ability to mutate system state or install packages.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AC-6
+                title: Least Privilege
+              - framework: NIST 800-53r5
+                control_id: CM-6
+                title: Configuration Settings
+              - framework: NIST 800-53r5
+                control_id: CM-7
+                title: Least Functionality
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: approximate
+                values:
+                  - apt-get
+                  - chmod
+                  - chown
+                  - dnf
+                  - iptables
+                  - modprobe
+                  - nft
+                  - passwd
+                  - service
+                  - su
+                  - sudo
+                  - sysctl
+                  - systemctl
+                  - usermod
+                  - yum
+                reason: Daytona v1 can deny command names, but not specific argv, service state, or kernel configuration semantics.
+                missing_surface: argument-aware command and service/kernel state policy
+                verification_hint: Runtime probes must prove which generated policy denials fire in Daytona.
+              - target: daytona-hardening-v1
+                surface: argument_aware_command_restriction
+                status: unsupported
+                values:
+                  - apt-get install
+                  - sysctl -w
+                  - systemctl restart
+                reason: Daytona v1 command wrappers do not inspect argv safely.
+                missing_surface: argument-aware command policy
+                verification_hint: Keep these controls unsupported until a runtime parser/enforcer exists.
+              - target: daytona-hardening-v1
+                surface: kernel_sysctl_service_state
+                status: unsupported
+                values:
+                  - sysctl
+                  - systemctl
+                  - service
+                reason: Daytona v1 can deny commands and audit selected starting posture, but cannot verify full kernel, sysctl, or service state.
+                missing_surface: full kernel/sysctl/service-state policy and verifier
+                verification_hint: Use baseline posture audit probes for selected runtime evidence; do not infer full state compliance from command-name or executable-path denial.
+          - rule_id: restrict-remote-access-and-live-fetch
+            title: Represent remote access and live-fetch restrictions
+            description: >
+              Converts selected remote-access and live-fetch controls into broad
+              command denials, while preserving domain/CIDR gaps explicitly.
+            intended_effect: Reduce direct remote access and external fetch capability.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: SC-7
+                title: Boundary Protection
+              - framework: NIST 800-53r5
+                control_id: SI-4
+                title: System Monitoring
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: approximate
+                values:
+                  - curl
+                  - scp
+                  - ssh
+                  - wget
+                reason: Daytona v1 can deny selected command names but not all egress paths or domains.
+                missing_surface: complete egress mediation across tools and APIs
+                verification_hint: This must be paired with live probes before claiming runtime enforcement.
+              - target: daytona-hardening-v1
+                surface: domain_egress_policy
+                status: unsupported
+                values:
+                  - live package or update repositories
+                reason: Daytona v1 has no domain-level egress rule contract.
+                missing_surface: domain-aware egress policy
+                verification_hint: Do not mark repository domain controls as enforced for this target.
+              - target: daytona-hardening-v1
+                surface: cidr_egress_policy
+                status: unsupported
+                values:
+                  - non-loopback external networks
+                reason: Daytona v1 does not express arbitrary CIDR allow/deny lists.
+                missing_surface: CIDR-aware egress policy
+                verification_hint: Coarse non-loopback blocking is a separate surface and not CIDR policy.
+          - rule_id: preserve-checklist-only-controls
+            title: Preserve controls that cannot map to current runtime surfaces
+            description: >
+              Keeps unsupported control classes visible so downstream work cannot
+              silently claim coverage.
+            intended_effect: Record missing surfaces for future implementation.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AU-2
+                title: Event Logging
+              - framework: NIST 800-53r5
+                control_id: IA-5
+                title: Authenticator Management
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: full_auditd_compliance_evidence
+                status: unsupported
+                values:
+                  - audit log configuration
+                  - evidence retention
+                reason: The policy catalog can record intent but cannot collect auditd evidence.
+                missing_surface: auditd/compliance evidence pipeline
+                verification_hint: Treat as unsupported until runtime evidence collection exists.
+              - target: daytona-hardening-v1
+                surface: full_mac_enforcement
+                status: unsupported
+                values:
+                  - SELinux
+                  - AppArmor
+                reason: Daytona v1 does not configure Linux MAC profiles.
+                missing_surface: MAC policy compiler and live proof
+                verification_hint: Do not infer MAC behavior from command/path denials.
+  - policy_id: nist-linux-80053-high
+    family: nist-linux-security
+    title: NIST-derived High benchmark policy
+    description: >
+      NIST-derived High benchmark hardening profile that projects selected
+      usnistgov/linux_security controls onto Daytona v1 runtime primitives and
+      supplemental AgentSH argument-aware command and operation-specific file
+      policy. This policy is a
+      conservative approximation for benchmark hardening, not an assertion of
+      NIST, SCAP, DISA, or CIS compliance.
+    metadata:
+      source_policy_id: nist-linux-80053-high-derived
+      source_variant_id: high-derived-daytona-contract-v1
+      approximation_basis: selected_controls_projected_onto_daytona_v1
+      source_control_scope: selected_high_baseline_control_groups_from_pr1_fixture
+      compile_status_counts:
+        denominator: selected_runtime_mapping_items_in_this_variant
+        enforced: 16
+        approximate: 0
+        unsupported: 5
+        representation_only: 0
+        deferred: 0
+      coverage_disposition_counts:
+        denominator: selected_runtime_mapping_items_in_this_variant
+        enforced: 16
+        approximated: 0
+        metadata_only: 0
+        monitoring_only: 0
+        representation_only: 0
+        unsupported: 5
+        deferred: 0
+        not_relevant_to_daytona: 0
+    variants:
+      - variant_id: nist-linux-80053-high-daytona-v1
+        title: NIST-derived High Daytona v1 runtime profile
+        fidelity: runtime_enforced_partial
+        description: >
+          Compiles supported Daytona v1 primitives for selected package,
+          administrative, remote-access, sensitive-path, and secret surfaces.
+          Non-Daytona control semantics remain visible as unsupported or
+          deferred mappings.
+        runtime_targets:
+          - target: daytona-hardening-v1
+            capability_set: daytona-hardening-v1
+          - target: agentsh-policy-v1
+            capability_set: agentsh-policy-v1
+        fidelity_notes:
+          - Conservative approximation of selected usnistgov/linux_security High baseline control groups.
+          - Only enforced mappings targeting daytona-hardening-v1 compile into Daytona v1 hardening fields.
+          - AgentSH contributes catalog coverage for argument-aware command restrictions and operation-specific read/write path rules; the Terminal-Bench runner installs the operation-specific session policy, while standalone real AgentSH preflight probes AgentSH-owned rules.
+          - Live Daytona evidence collection remains outside this catalog package.
+        metadata:
+          source_policy_id: nist-linux-80053-high-derived
+          source_variant_id: high-derived-daytona-contract-v1
+          policy_label: NIST-derived High benchmark policy
+          compliance_claim: none
+          compile_status_counts:
+            denominator: selected_runtime_mapping_items_in_this_variant
+            enforced: 16
+            approximate: 0
+            unsupported: 5
+            representation_only: 0
+            deferred: 0
+          coverage_disposition_counts:
+            denominator: selected_runtime_mapping_items_in_this_variant
+            enforced: 16
+            approximated: 0
+            metadata_only: 0
+            monitoring_only: 0
+            representation_only: 0
+            unsupported: 5
+            deferred: 0
+            not_relevant_to_daytona: 0
+        unsupported_features:
+          - surface: full_mac_enforcement
+            reason: usnistgov/linux_security includes SELinux/AppArmor-oriented controls outside Daytona v1 MAC capabilities.
+            missing_surface: SELinux/AppArmor policy compiler and runtime proof
+            verification_hint: Keep MAC controls unsupported until the runtime target can configure and prove them.
+          - surface: full_auditd_compliance_evidence
+            reason: The catalog can compile hardening fields but cannot collect auditd evidence or assessment records.
+            missing_surface: auditd collection, retention, and assessment evidence contract
+            verification_hint: Live evidence must be collected separately.
+          - surface: full_nist_compliance
+            reason: A benchmark hardening profile does not establish organizational control compliance.
+            missing_surface: complete control scope, assessment evidence, and authorization process
+            verification_hint: Use only NIST-derived benchmark hardening language for this policy.
+        rules:
+          - rule_id: enforce-admin-package-and-control-plane-denials
+            title: Enforce package, admin, and control-plane command denials
+            description: >
+              Converts selected administrative and mutation-oriented control
+              intent into Daytona v1 command-name and known executable-path
+              denials. This enforces the runtime primitives only; it does not
+              enforce argument semantics, service state, or kernel settings.
+            intended_effect: Reduce agent ability to mutate system state, install packages, or change privileged configuration.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AC-6
+                title: Least Privilege
+              - framework: NIST 800-53r5
+                control_id: CM-6
+                title: Configuration Settings
+              - framework: NIST 800-53r5
+                control_id: CM-7
+                title: Least Functionality
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: non_root_user
+                status: enforced
+                values:
+                  - daytona
+                reason: Enforces Daytona execution as the non-root agent user for the benchmark runtime.
+                missing_surface: full user, group, capability, and privilege-transition policy
+                verification_hint: Probe id -u and whoami inside the hardened Daytona agent process.
+                metadata:
+                  source_control_fidelity: selected_least_privilege_runtime_projection
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: enforced
+                values:
+                  - apt
+                  - apt-get
+                  - apt-key
+                  - chmod
+                  - chown
+                  - dnf
+                  - dpkg
+                  - groupadd
+                  - groupdel
+                  - groupmod
+                  - insmod
+                  - iptables
+                  - modprobe
+                  - nft
+                  - passwd
+                  - rpm
+                  - rmmod
+                  - service
+                  - su
+                  - sudo
+                  - sysctl
+                  - systemctl
+                  - useradd
+                  - userdel
+                  - usermod
+                  - yum
+                reason: Enforces broad command-name denial for selected package, admin, and control-plane tools only.
+                missing_surface: argument-aware command and service/kernel state policy
+                verification_hint: Probe denied command names such as apt-get, sudo, sysctl, and systemctl in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_command_name_projection
+              - target: daytona-hardening-v1
+                surface: denied_exec_path
+                status: enforced
+                values:
+                  - /bin/chmod
+                  - /bin/chown
+                  - /bin/su
+                  - /sbin/iptables
+                  - /sbin/modprobe
+                  - /sbin/sysctl
+                  - /usr/bin/apt
+                  - /usr/bin/apt-get
+                  - /usr/bin/apt-key
+                  - /usr/bin/chmod
+                  - /usr/bin/chown
+                  - /usr/bin/dnf
+                  - /usr/bin/dpkg
+                  - /usr/bin/passwd
+                  - /usr/bin/rpm
+                  - /usr/bin/su
+                  - /usr/bin/sudo
+                  - /usr/bin/systemctl
+                  - /usr/sbin/groupadd
+                  - /usr/sbin/groupdel
+                  - /usr/sbin/groupmod
+                  - /usr/sbin/iptables
+                  - /usr/sbin/modprobe
+                  - /usr/sbin/nft
+                  - /usr/sbin/service
+                  - /usr/sbin/sysctl
+                  - /usr/sbin/useradd
+                  - /usr/sbin/userdel
+                  - /usr/sbin/usermod
+                reason: Enforces denial for known Linux binary paths that commonly back the selected command names.
+                missing_surface: complete cross-distribution executable inventory
+                verification_hint: Probe known executable paths such as /usr/bin/sudo and /usr/bin/apt-get in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_known_path_projection
+              - target: agentsh-policy-v1
+                surface: argument_aware_command_restriction
+                status: enforced
+                values:
+                  - apt-get install
+                  - sysctl -w
+                  - systemctl restart
+                reason: AgentSH command rules render args_patterns for package-manager installs, sysctl writes, and service restart attempts.
+                missing_surface: broader kernel and service-state semantic validation remains represented separately.
+                verification_hint: Probe AgentSH args_patterns with apt-get install, sysctl -w, and systemctl restart commands.
+                metadata:
+                  source_control_fidelity: agentsh_argument_pattern_projection
+                  agentsh_policy_rules:
+                    - deny-system-pkg-install
+                    - deny-sysctl-write
+                    - deny-service-restart
+              - target: daytona-hardening-v1
+                surface: kernel_sysctl_service_state
+                status: unsupported
+                values:
+                  - sysctl
+                  - systemctl
+                  - service
+                reason: Daytona v1 can deny commands and audit selected starting posture, but cannot verify full kernel, sysctl, or service state.
+                missing_surface: full kernel/sysctl/service-state policy and verifier
+                verification_hint: Use baseline posture audit probes for selected runtime evidence; do not infer full state compliance from command-name or executable-path denial.
+          - rule_id: enforce-remote-access-and-live-fetch-denials
+            title: Enforce remote access and live-fetch command denials
+            description: >
+              Converts selected boundary-protection and monitoring intent into
+              Daytona v1 denial of direct remote-access and fetch tools, plus
+              child-process network blocking for those tools and common
+              shell/Python subprocess paths. CIDR policy is enforced with the
+              repo default benchmark denylist, and domain egress is routed
+              through the local proxy with direct raw-IP bypass blocked.
+            intended_effect: Reduce direct remote access, file transfer, and live fetch capability by common child-process tools.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: SC-7
+                title: Boundary Protection
+              - framework: NIST 800-53r5
+                control_id: SI-4
+                title: System Monitoring
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: enforced
+                values:
+                  - curl
+                  - ftp
+                  - nc
+                  - ncat
+                  - rsync
+                  - scp
+                  - sftp
+                  - ssh
+                  - telnet
+                  - wget
+                reason: Enforces broad command-name denial for selected remote-access and live-fetch tools only.
+                missing_surface: complete egress mediation across tools, libraries, and APIs
+                verification_hint: Probe denied command names such as curl, wget, ssh, and scp in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_command_name_projection
+              - target: daytona-hardening-v1
+                surface: denied_exec_path
+                status: enforced
+                values:
+                  - /bin/nc
+                  - /usr/bin/curl
+                  - /usr/bin/ftp
+                  - /usr/bin/nc
+                  - /usr/bin/ncat
+                  - /usr/bin/rsync
+                  - /usr/bin/scp
+                  - /usr/bin/sftp
+                  - /usr/bin/ssh
+                  - /usr/bin/telnet
+                  - /usr/bin/wget
+                reason: Enforces denial for known Linux binary paths that commonly back selected network tools.
+                missing_surface: complete cross-distribution executable inventory
+                verification_hint: Probe known executable paths such as /usr/bin/curl and /usr/bin/ssh in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_known_path_projection
+              - target: daytona-hardening-v1
+                surface: child_process_network_block
+                status: enforced
+                values:
+                  - bash
+                  - bash.real
+                  - sh
+                  - dash
+                  - python
+                  - python3
+                  - curl
+                  - ftp
+                  - nc
+                  - ncat
+                  - rsync
+                  - scp
+                  - sftp
+                  - ssh
+                  - telnet
+                  - wget
+                reason: Enforces Daytona child-process network blocking for selected shells, Python runtimes, and network-capable command names.
+                missing_surface: complete non-loopback egress mediation across all languages, libraries, and process names
+                verification_hint: Probe child-process network attempts for python3, curl, wget, ssh, and scp in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_child_process_projection
+              - target: daytona-hardening-v1
+                surface: domain_egress_policy
+                status: enforced
+                values:
+                  - default:deny
+                  - allow:api.openrouter.ai
+                  - allow:openrouter.ai
+                  - allow:*.openrouter.ai
+                reason: Enforces default-deny HTTP(S) domain egress through a controller-managed local proxy while blocking direct raw-IP bypass attempts through CIDR default-deny.
+                missing_surface: kernel-grade transparent domain firewall evidence
+                verification_hint: Probe denied domain requests for network_domain events and raw public-IP bypass attempts for network_cidr events.
+              - target: daytona-hardening-v1
+                surface: cidr_egress_policy
+                status: enforced
+                values:
+                  - 169.254.169.254/32
+                  - 169.254.0.0/16
+                  - 10.0.0.0/8
+                  - 172.16.0.0/12
+                  - 192.168.0.0/16
+                  - fe80::/10
+                  - fc00::/7
+                reason: Enforces the repo-owned default benchmark CIDR denylist for metadata, link-local, and private IP ranges.
+                missing_surface: kernel-grade egress firewall evidence
+                verification_hint: Probe direct socket connections to metadata and private IPs and require network_cidr policy events.
+              - target: daytona-hardening-v1
+                surface: coarse_non_loopback_network_block
+                status: enforced
+                reason: Enforces BoundaryBench LD_PRELOAD socket mediation for non-loopback external egress while keeping loopback available for runtime plumbing.
+                missing_surface: kernel-grade egress firewall and domain-aware allowlist evidence
+                verification_hint: Probe direct non-loopback socket denial plus a loopback allowed control in Daytona and require network policy events for denied connects.
+          - rule_id: enforce-sensitive-path-and-secret-denials
+            title: Enforce sensitive path and environment secret denials
+            description: >
+              Applies selected Daytona v1 exact/prefix path denials and
+              environment-variable stripping for credential and privileged
+              configuration surfaces. These denials are runtime hardening
+              primitives, not audit or evidence collection.
+            intended_effect: Reduce agent access to privileged local credentials and inherited secret-bearing environment variables.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AC-6
+                title: Least Privilege
+              - framework: NIST 800-53r5
+                control_id: IA-5
+                title: Authenticator Management
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: denied_path_exact
+                status: enforced
+                values:
+                  - /etc/gshadow
+                  - /etc/shadow
+                  - /etc/sudoers
+                reason: Enforces exact path denial for selected local credential and privileged authorization files.
+                missing_surface: operation-specific read/write policy and live file-state verification
+                verification_hint: Probe exact denied paths such as /etc/shadow and /etc/sudoers in Daytona.
+                metadata:
+                  source_control_fidelity: selected_sensitive_path_projection
+              - target: daytona-hardening-v1
+                surface: denied_path_prefix
+                status: enforced
+                values:
+                  - /etc/sudoers.d/
+                  - /root/.ssh/
+                reason: Enforces prefix denial for selected privileged authorization and root SSH material.
+                missing_surface: operation-specific read/write policy and live file-state verification
+                verification_hint: Probe denied path prefixes such as /root/.ssh/ in Daytona.
+                metadata:
+                  source_control_fidelity: selected_sensitive_path_projection
+              - target: daytona-hardening-v1
+                surface: env_var_strip
+                status: enforced
+                values:
+                  - AWS_ACCESS_KEY_ID
+                  - AWS_SECRET_ACCESS_KEY
+                  - AWS_SESSION_TOKEN
+                  - DAYTONA_API_KEY
+                  - GITHUB_TOKEN
+                  - OPENAI_API_KEY
+                  - OPENROUTER_API_KEY
+                reason: Enforces removal of selected high-risk inherited secret variables before runtime execution.
+                missing_surface: complete secret discovery and runtime evidence collection
+                verification_hint: Probe runtime environment for stripped variables such as OPENROUTER_API_KEY and AWS_SECRET_ACCESS_KEY.
+                metadata:
+                  source_control_fidelity: selected_secret_environment_projection
+              - target: daytona-hardening-v1
+                surface: operation_specific_path_mode_policy
+                status: unsupported
+                values:
+                  - read-only exceptions
+                  - write-only restrictions
+                reason: Daytona v1 exact and prefix path denials are operation-neutral.
+                missing_surface: operation-specific read/write path mode policy
+                verification_hint: Do not infer read/write mode coverage from exact or prefix path denial.
+              - target: agentsh-policy-v1
+                surface: operation_specific_path_mode_policy
+                status: enforced
+                values:
+                  - /etc/gshadow
+                  - /etc/shadow
+                  - /etc/sudoers
+                  - /etc/sudoers.d/
+                  - /root/.ssh/
+                reason: AgentSH file rules enforce read-mode denial for selected sensitive credential and authorization paths.
+                missing_surface: Daytona remains operation-neutral; full benchmark-time enforcement requires the agent to execute under AgentSH.
+                verification_hint: Probe read, open, stat, list, readlink, and access operations against the selected paths under AgentSH.
+                metadata:
+                  source_control_fidelity: agentsh_operation_specific_path_projection
+                  operation_mode: read
+                  operations:
+                    - read
+                    - open
+                    - stat
+                    - list
+                    - readlink
+                    - access
+                  write_guard: true
+                  agentsh_policy_rules:
+                    - deny-configured-read-paths
+                    - deny-configured-read-path-write-guard
+              - target: agentsh-policy-v1
+                surface: operation_specific_path_mode_policy
+                status: enforced
+                values:
+                  - /etc/sudoers
+                  - /etc/sudoers.d/**
+                  - /root/.ssh/**
+                reason: AgentSH file rules enforce write-mode denial for selected privileged authorization and root SSH paths.
+                missing_surface: Daytona remains operation-neutral; full benchmark-time enforcement requires the agent to execute under AgentSH.
+                verification_hint: Probe write, create, mkdir, symlink, chmod, chown, rename, link, refer, delete, and rmdir operations against the selected paths under AgentSH.
+                metadata:
+                  source_control_fidelity: agentsh_operation_specific_path_projection
+                  operation_mode: write
+                  operations:
+                    - write
+                    - create
+                    - mkdir
+                    - symlink
+                    - chmod
+                    - chown
+                    - rename
+                    - link
+                    - refer
+                    - delete
+                    - rmdir
+                  write_guard: false
+                  agentsh_policy_rules:
+                    - deny-configured-write-paths
+              - target: daytona-hardening-v1
+                surface: full_auditd_compliance_evidence
+                status: unsupported
+                values:
+                  - audit log configuration
+                  - evidence retention
+                reason: Environment stripping and path denial are hardening actions, not auditd evidence.
+                missing_surface: auditd/compliance evidence pipeline
+                verification_hint: Treat auditd evidence as unsupported until live evidence collection exists.
+          - rule_id: preserve-nist-derived-unsupported-surfaces
+            title: Preserve unsupported NIST-derived control surfaces
+            description: >
+              Keeps non-Daytona control classes explicit so downstream benchmark
+              work cannot mistake the runtime profile for full control coverage.
+            intended_effect: Record missing runtime surfaces and prevent silent conversion into fake hardening.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AU-2
+                title: Event Logging
+              - framework: NIST 800-53r5
+                control_id: CM-6
+                title: Configuration Settings
+              - framework: NIST 800-53r5
+                control_id: SI-4
+                title: System Monitoring
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: full_mac_enforcement
+                status: unsupported
+                values:
+                  - SELinux
+                  - AppArmor
+                reason: Daytona v1 does not configure Linux MAC profiles.
+                missing_surface: MAC policy compiler and live proof
+                verification_hint: Do not infer MAC behavior from command/path denials.
+              - target: daytona-hardening-v1
+                surface: seccomp_syscall_policy
+                status: enforced
+                values:
+                  - personality
+                  - ptrace
+                  - process_vm_readv
+                  - process_vm_writev
+                reason: Enforces a narrow denylist for selected process-introspection and execution-personality syscalls only.
+                missing_surface: broad syscall allowlist and full kernel hardening profile
+                verification_hint: Probe denied syscalls such as personality and ptrace in Daytona before claiming coverage.
+              - target: daytona-hardening-v1
+                surface: full_nist_compliance
+                status: unsupported
+                values:
+                  - complete High baseline coverage
+                  - organizational assessment evidence
+                reason: This benchmark hardening profile does not establish organizational control compliance.
+                missing_surface: complete compliance scope, evidence, and assessment process
+                verification_hint: Use only NIST-derived partial benchmark hardening language for this policy.
+  - policy_id: nist-linux-80053-medium
+    family: nist-linux-security
+    title: NIST-derived Medium benchmark policy
+    description: >
+      NIST-derived Medium benchmark hardening profile that projects selected
+      usnistgov/linux_security Medium-baseline controls onto Daytona v1 runtime
+      primitives and supplemental AgentSH argument-aware command and
+      operation-specific file policy. This is
+      intentionally less restrictive than the High profile: it omits
+      kernel-module controls, reduces the remote-access denial set to primary
+      vectors, and narrows child-process network blocking scope. It is a
+      conservative approximation for benchmark hardening, not an assertion of
+      NIST, SCAP, DISA, or CIS compliance.
+    metadata:
+      source_policy_id: nist-linux-80053-high-derived
+      source_variant_id: high-derived-daytona-contract-v1
+      approximation_basis: medium_baseline_subset_projected_onto_daytona_v1
+      source_control_scope: selected_medium_baseline_control_groups_from_high_derived
+      compile_status_counts:
+        denominator: selected_runtime_mapping_items_in_this_variant
+        enforced: 16
+        approximate: 0
+        unsupported: 5
+        representation_only: 0
+        deferred: 0
+      coverage_disposition_counts:
+        denominator: selected_runtime_mapping_items_in_this_variant
+        enforced: 16
+        approximated: 0
+        metadata_only: 0
+        monitoring_only: 0
+        representation_only: 0
+        unsupported: 5
+        deferred: 0
+        not_relevant_to_daytona: 0
+    variants:
+      - variant_id: nist-linux-80053-medium-daytona-v1
+        title: NIST-derived Medium Daytona v1 runtime profile
+        fidelity: runtime_enforced_partial
+        description: >
+          Compiles supported Daytona v1 primitives for the Medium baseline
+          subset: core package and admin tools, primary remote-access vectors,
+          sensitive-path protection, and secret stripping. Drops kernel-module
+          controls and obscure network tools relative to the High profile.
+          Non-Daytona control semantics remain visible as unsupported or
+          deferred mappings.
+        runtime_targets:
+          - target: daytona-hardening-v1
+            capability_set: daytona-hardening-v1
+          - target: agentsh-policy-v1
+            capability_set: agentsh-policy-v1
+        fidelity_notes:
+          - Conservative approximation of selected usnistgov/linux_security Medium baseline control groups.
+          - Intentionally less restrictive than the High profile where the Medium baseline selects fewer control enhancements.
+          - Only enforced mappings targeting daytona-hardening-v1 compile into Daytona v1 hardening fields.
+          - AgentSH contributes catalog coverage for argument-aware command restrictions and operation-specific read/write path rules; the Terminal-Bench runner installs the operation-specific session policy, while standalone real AgentSH preflight probes AgentSH-owned rules.
+          - Live Daytona evidence collection remains outside this catalog package.
+        metadata:
+          source_policy_id: nist-linux-80053-high-derived
+          source_variant_id: high-derived-daytona-contract-v1
+          policy_label: NIST-derived Medium benchmark policy
+          compliance_claim: none
+          compile_status_counts:
+            denominator: selected_runtime_mapping_items_in_this_variant
+            enforced: 16
+            approximate: 0
+            unsupported: 5
+            representation_only: 0
+            deferred: 0
+          coverage_disposition_counts:
+            denominator: selected_runtime_mapping_items_in_this_variant
+            enforced: 16
+            approximated: 0
+            metadata_only: 0
+            monitoring_only: 0
+            representation_only: 0
+            unsupported: 5
+            deferred: 0
+            not_relevant_to_daytona: 0
+        unsupported_features:
+          - surface: full_mac_enforcement
+            reason: usnistgov/linux_security includes SELinux/AppArmor-oriented controls outside Daytona v1 MAC capabilities.
+            missing_surface: SELinux/AppArmor policy compiler and runtime proof
+            verification_hint: Keep MAC controls unsupported until the runtime target can configure and prove them.
+          - surface: full_auditd_compliance_evidence
+            reason: The catalog can compile hardening fields but cannot collect auditd evidence or assessment records.
+            missing_surface: auditd collection, retention, and assessment evidence contract
+            verification_hint: Live evidence must be collected separately.
+          - surface: full_nist_compliance
+            reason: A benchmark hardening profile does not establish organizational control compliance.
+            missing_surface: complete control scope, assessment evidence, and authorization process
+            verification_hint: Use only NIST-derived benchmark hardening language for this policy.
+        rules:
+          - rule_id: enforce-admin-package-denials-medium
+            title: Enforce package and admin command denials (Medium baseline)
+            description: >
+              Converts selected administrative and package-management control
+              intent into Daytona v1 command-name and executable-path denials.
+              The Medium baseline omits kernel-module controls (insmod, rmmod,
+              modprobe) relative to High, reflecting fewer CM-7 enhancements at
+              the Medium impact level.
+            intended_effect: Reduce agent ability to mutate system state or install packages at the Medium baseline level.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AC-6
+                title: Least Privilege
+              - framework: NIST 800-53r5
+                control_id: CM-6
+                title: Configuration Settings
+              - framework: NIST 800-53r5
+                control_id: CM-7
+                title: Least Functionality
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: non_root_user
+                status: enforced
+                values:
+                  - daytona
+                reason: Enforces Daytona execution as the non-root agent user for the benchmark runtime.
+                missing_surface: full user, group, capability, and privilege-transition policy
+                verification_hint: Probe id -u and whoami inside the hardened Daytona agent process.
+                metadata:
+                  source_control_fidelity: selected_least_privilege_runtime_projection
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: enforced
+                values:
+                  - apt
+                  - apt-get
+                  - apt-key
+                  - chmod
+                  - chown
+                  - dnf
+                  - dpkg
+                  - groupadd
+                  - groupdel
+                  - groupmod
+                  - iptables
+                  - nft
+                  - passwd
+                  - rpm
+                  - service
+                  - su
+                  - sudo
+                  - sysctl
+                  - systemctl
+                  - useradd
+                  - userdel
+                  - usermod
+                  - yum
+                reason: Enforces broad command-name denial for selected package, admin, and control-plane tools. Medium baseline omits kernel-module tools (insmod, rmmod, modprobe) relative to High.
+                missing_surface: argument-aware command and service/kernel state policy
+                verification_hint: Probe denied command names such as apt-get, sudo, sysctl, and systemctl in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_command_name_projection
+              - target: daytona-hardening-v1
+                surface: denied_exec_path
+                status: enforced
+                values:
+                  - /bin/chmod
+                  - /bin/chown
+                  - /bin/su
+                  - /sbin/iptables
+                  - /sbin/sysctl
+                  - /usr/bin/apt
+                  - /usr/bin/apt-get
+                  - /usr/bin/apt-key
+                  - /usr/bin/chmod
+                  - /usr/bin/chown
+                  - /usr/bin/dnf
+                  - /usr/bin/dpkg
+                  - /usr/bin/passwd
+                  - /usr/bin/rpm
+                  - /usr/bin/su
+                  - /usr/bin/sudo
+                  - /usr/bin/systemctl
+                  - /usr/sbin/groupadd
+                  - /usr/sbin/groupdel
+                  - /usr/sbin/groupmod
+                  - /usr/sbin/iptables
+                  - /usr/sbin/nft
+                  - /usr/sbin/service
+                  - /usr/sbin/sysctl
+                  - /usr/sbin/useradd
+                  - /usr/sbin/userdel
+                  - /usr/sbin/usermod
+                reason: Enforces denial for known Linux binary paths backing selected admin/package commands. Omits kernel-module paths relative to High.
+                missing_surface: complete cross-distribution executable inventory
+                verification_hint: Probe known executable paths such as /usr/bin/sudo and /usr/bin/apt-get in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_known_path_projection
+              - target: agentsh-policy-v1
+                surface: argument_aware_command_restriction
+                status: enforced
+                values:
+                  - apt-get install
+                  - sysctl -w
+                  - systemctl restart
+                reason: AgentSH command rules render args_patterns for package-manager installs, sysctl writes, and service restart attempts.
+                missing_surface: broader kernel and service-state semantic validation remains represented separately.
+                verification_hint: Probe AgentSH args_patterns with apt-get install, sysctl -w, and systemctl restart commands.
+                metadata:
+                  source_control_fidelity: agentsh_argument_pattern_projection
+                  agentsh_policy_rules:
+                    - deny-system-pkg-install
+                    - deny-sysctl-write
+                    - deny-service-restart
+              - target: daytona-hardening-v1
+                surface: kernel_sysctl_service_state
+                status: unsupported
+                values:
+                  - sysctl
+                  - systemctl
+                  - service
+                reason: Daytona v1 can deny commands but cannot verify kernel, sysctl, or service state.
+                missing_surface: kernel/sysctl/service-state policy and verifier
+                verification_hint: Do not infer state hardening from command-name or executable-path denial.
+          - rule_id: enforce-remote-access-denials-medium
+            title: Enforce remote access and live-fetch command denials (Medium baseline)
+            description: >
+              Converts selected boundary-protection intent into Daytona v1
+              denial of primary remote-access and fetch tools. The Medium
+              baseline focuses on commonly-used vectors (curl, wget, ssh, scp,
+              rsync) and drops obscure tools (ftp, telnet, nc, ncat) relative
+              to High.
+            intended_effect: Reduce direct remote access and live fetch capability via primary vectors.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: SC-7
+                title: Boundary Protection
+              - framework: NIST 800-53r5
+                control_id: SI-4
+                title: System Monitoring
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: enforced
+                values:
+                  - curl
+                  - rsync
+                  - scp
+                  - sftp
+                  - ssh
+                  - wget
+                reason: Enforces command-name denial for primary remote-access and fetch tools. Medium baseline drops ftp, telnet, nc, ncat relative to High.
+                missing_surface: complete egress mediation across tools, libraries, and APIs
+                verification_hint: Probe denied command names such as curl, wget, ssh, and scp in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_command_name_projection
+              - target: daytona-hardening-v1
+                surface: denied_exec_path
+                status: enforced
+                values:
+                  - /usr/bin/curl
+                  - /usr/bin/rsync
+                  - /usr/bin/scp
+                  - /usr/bin/sftp
+                  - /usr/bin/ssh
+                  - /usr/bin/wget
+                reason: Enforces denial for known Linux binary paths backing primary network tools. Omits ftp, telnet, nc, ncat paths relative to High.
+                missing_surface: complete cross-distribution executable inventory
+                verification_hint: Probe known executable paths such as /usr/bin/curl and /usr/bin/ssh in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_known_path_projection
+              - target: daytona-hardening-v1
+                surface: child_process_network_block
+                status: enforced
+                values:
+                  - bash
+                  - bash.real
+                  - sh
+                  - dash
+                  - python
+                  - python3
+                  - curl
+                  - rsync
+                  - scp
+                  - sftp
+                  - ssh
+                  - wget
+                reason: Enforces Daytona child-process network blocking for shells, Python runtimes, and primary network tools. Narrower scope than High.
+                missing_surface: complete non-loopback egress mediation across all languages, libraries, and process names
+                verification_hint: Probe child-process network attempts for python3, curl, wget, and ssh in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_child_process_projection
+              - target: daytona-hardening-v1
+                surface: domain_egress_policy
+                status: enforced
+                values:
+                  - default:deny
+                  - allow:api.openrouter.ai
+                  - allow:openrouter.ai
+                  - allow:*.openrouter.ai
+                reason: Enforces default-deny HTTP(S) domain egress through a controller-managed local proxy while blocking direct raw-IP bypass attempts through CIDR default-deny.
+                missing_surface: kernel-grade transparent domain firewall evidence
+                verification_hint: Probe denied domain requests for network_domain events and raw public-IP bypass attempts for network_cidr events.
+              - target: daytona-hardening-v1
+                surface: cidr_egress_policy
+                status: enforced
+                values:
+                  - 169.254.169.254/32
+                  - 169.254.0.0/16
+                  - 10.0.0.0/8
+                  - 172.16.0.0/12
+                  - 192.168.0.0/16
+                  - fe80::/10
+                  - fc00::/7
+                reason: Enforces the repo-owned default benchmark CIDR denylist for metadata, link-local, and private IP ranges.
+                missing_surface: kernel-grade egress firewall evidence
+                verification_hint: Probe direct socket connections to metadata and private IPs and require network_cidr policy events.
+              - target: daytona-hardening-v1
+                surface: coarse_non_loopback_network_block
+                status: enforced
+                reason: Enforces BoundaryBench LD_PRELOAD socket mediation for non-loopback external egress while keeping loopback available for runtime plumbing.
+                missing_surface: kernel-grade egress firewall and domain-aware allowlist evidence
+                verification_hint: Probe direct non-loopback socket denial plus a loopback allowed control in Daytona and require network policy events for denied connects.
+          - rule_id: enforce-sensitive-path-and-secret-denials-medium
+            title: Enforce sensitive path and environment secret denials (Medium baseline)
+            description: >
+              Applies selected Daytona v1 exact/prefix path denials and
+              environment-variable stripping for credential and privileged
+              configuration surfaces. Identical to High for this surface class
+              as Medium baseline still requires authenticator protection.
+            intended_effect: Reduce agent access to privileged local credentials and inherited secret-bearing environment variables.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AC-6
+                title: Least Privilege
+              - framework: NIST 800-53r5
+                control_id: IA-5
+                title: Authenticator Management
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: denied_path_exact
+                status: enforced
+                values:
+                  - /etc/gshadow
+                  - /etc/shadow
+                  - /etc/sudoers
+                reason: Enforces exact path denial for selected local credential and privileged authorization files.
+                missing_surface: operation-specific read/write policy and live file-state verification
+                verification_hint: Probe exact denied paths such as /etc/shadow and /etc/sudoers in Daytona.
+                metadata:
+                  source_control_fidelity: selected_sensitive_path_projection
+              - target: daytona-hardening-v1
+                surface: denied_path_prefix
+                status: enforced
+                values:
+                  - /etc/sudoers.d/
+                  - /root/.ssh/
+                reason: Enforces prefix denial for selected privileged authorization and root SSH material.
+                missing_surface: operation-specific read/write policy and live file-state verification
+                verification_hint: Probe denied path prefixes such as /root/.ssh/ in Daytona.
+                metadata:
+                  source_control_fidelity: selected_sensitive_path_projection
+              - target: daytona-hardening-v1
+                surface: env_var_strip
+                status: enforced
+                values:
+                  - AWS_ACCESS_KEY_ID
+                  - AWS_SECRET_ACCESS_KEY
+                  - AWS_SESSION_TOKEN
+                  - DAYTONA_API_KEY
+                  - GITHUB_TOKEN
+                  - OPENAI_API_KEY
+                  - OPENROUTER_API_KEY
+                reason: Enforces removal of selected high-risk inherited secret variables before runtime execution.
+                missing_surface: complete secret discovery and runtime evidence collection
+                verification_hint: Probe runtime environment for stripped variables such as OPENROUTER_API_KEY and AWS_SECRET_ACCESS_KEY.
+                metadata:
+                  source_control_fidelity: selected_secret_environment_projection
+              - target: daytona-hardening-v1
+                surface: operation_specific_path_mode_policy
+                status: unsupported
+                values:
+                  - read-only exceptions
+                  - write-only restrictions
+                reason: Daytona v1 exact and prefix path denials are operation-neutral.
+                missing_surface: operation-specific read/write path mode policy
+                verification_hint: Do not infer read/write mode coverage from exact or prefix path denial.
+              - target: agentsh-policy-v1
+                surface: operation_specific_path_mode_policy
+                status: enforced
+                values:
+                  - /etc/gshadow
+                  - /etc/shadow
+                  - /etc/sudoers
+                  - /etc/sudoers.d/
+                  - /root/.ssh/
+                reason: AgentSH file rules enforce read-mode denial for selected sensitive credential and authorization paths.
+                missing_surface: Daytona remains operation-neutral; full benchmark-time enforcement requires the agent to execute under AgentSH.
+                verification_hint: Probe read, open, stat, list, readlink, and access operations against the selected paths under AgentSH.
+                metadata:
+                  source_control_fidelity: agentsh_operation_specific_path_projection
+                  operation_mode: read
+                  operations:
+                    - read
+                    - open
+                    - stat
+                    - list
+                    - readlink
+                    - access
+                  write_guard: true
+                  agentsh_policy_rules:
+                    - deny-configured-read-paths
+                    - deny-configured-read-path-write-guard
+              - target: agentsh-policy-v1
+                surface: operation_specific_path_mode_policy
+                status: enforced
+                values:
+                  - /etc/sudoers
+                  - /etc/sudoers.d/**
+                  - /root/.ssh/**
+                reason: AgentSH file rules enforce write-mode denial for selected privileged authorization and root SSH paths.
+                missing_surface: Daytona remains operation-neutral; full benchmark-time enforcement requires the agent to execute under AgentSH.
+                verification_hint: Probe write, create, mkdir, symlink, chmod, chown, rename, link, refer, delete, and rmdir operations against the selected paths under AgentSH.
+                metadata:
+                  source_control_fidelity: agentsh_operation_specific_path_projection
+                  operation_mode: write
+                  operations:
+                    - write
+                    - create
+                    - mkdir
+                    - symlink
+                    - chmod
+                    - chown
+                    - rename
+                    - link
+                    - refer
+                    - delete
+                    - rmdir
+                  write_guard: false
+                  agentsh_policy_rules:
+                    - deny-configured-write-paths
+              - target: daytona-hardening-v1
+                surface: full_auditd_compliance_evidence
+                status: unsupported
+                values:
+                  - audit log configuration
+                  - evidence retention
+                reason: Environment stripping and path denial are hardening actions, not auditd evidence.
+                missing_surface: auditd/compliance evidence pipeline
+                verification_hint: Treat auditd evidence as unsupported until live evidence collection exists.
+          - rule_id: preserve-nist-derived-unsupported-surfaces-medium
+            title: Preserve unsupported NIST-derived control surfaces (Medium)
+            description: >
+              Keeps non-Daytona control classes explicit so downstream benchmark
+              work cannot mistake the runtime profile for full control coverage.
+            intended_effect: Record missing runtime surfaces and prevent silent conversion into fake hardening.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AU-2
+                title: Event Logging
+              - framework: NIST 800-53r5
+                control_id: CM-6
+                title: Configuration Settings
+              - framework: NIST 800-53r5
+                control_id: SI-4
+                title: System Monitoring
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: full_mac_enforcement
+                status: unsupported
+                values:
+                  - SELinux
+                  - AppArmor
+                reason: Daytona v1 does not configure Linux MAC profiles.
+                missing_surface: MAC policy compiler and live proof
+                verification_hint: Do not infer MAC behavior from command/path denials.
+              - target: daytona-hardening-v1
+                surface: seccomp_syscall_policy
+                status: enforced
+                values:
+                  - personality
+                  - ptrace
+                reason: Enforces a narrow denylist for selected process-introspection and execution-personality syscalls only.
+                missing_surface: broad syscall allowlist and full kernel hardening profile
+                verification_hint: Probe denied syscalls such as personality and ptrace in Daytona before claiming coverage.
+              - target: daytona-hardening-v1
+                surface: full_nist_compliance
+                status: unsupported
+                values:
+                  - complete Medium baseline coverage
+                  - organizational assessment evidence
+                reason: This benchmark hardening profile does not establish organizational control compliance.
+                missing_surface: complete compliance scope, evidence, and assessment process
+                verification_hint: Use only NIST-derived partial benchmark hardening language for this policy.
+  - policy_id: nist-linux-80053-low
+    family: nist-linux-security
+    title: NIST-derived Low benchmark policy
+    description: >
+      NIST-derived Low benchmark hardening profile that projects the minimal
+      usnistgov/linux_security Low-baseline controls onto Daytona v1 runtime
+      primitives and supplemental AgentSH argument-aware command policy. This is
+      intentionally the least restrictive tier: it enforces only core privilege
+      separation (non-root, sudo/su/passwd denial), basic sensitive-path
+      protection, minimal secret stripping, a narrow seccomp syscall denylist,
+      and default-deny SC-7 domain egress boundary protection. It does not
+      enforce remote-access command denials or child-process network blocking,
+      keeping the Low tier less restrictive than Medium and High. It is a
+      conservative approximation for benchmark hardening, not an assertion of
+      NIST, SCAP, DISA, or CIS compliance.
+    metadata:
+      source_policy_id: nist-linux-80053-high-derived
+      source_variant_id: high-derived-daytona-contract-v1
+      approximation_basis: low_baseline_subset_projected_onto_daytona_v1
+      source_control_scope: selected_low_baseline_control_groups_from_high_derived
+      compile_status_counts:
+        denominator: selected_runtime_mapping_items_in_this_variant
+        enforced: 11
+        approximate: 0
+        unsupported: 5
+        representation_only: 0
+        deferred: 0
+      coverage_disposition_counts:
+        denominator: selected_runtime_mapping_items_in_this_variant
+        enforced: 11
+        approximated: 0
+        metadata_only: 0
+        monitoring_only: 0
+        representation_only: 0
+        unsupported: 5
+        deferred: 0
+        not_relevant_to_daytona: 0
+    variants:
+      - variant_id: nist-linux-80053-low-daytona-v1
+        title: NIST-derived Low Daytona v1 runtime profile
+        fidelity: runtime_enforced_partial
+        description: >
+          Compiles the minimal Low baseline subset onto Daytona v1: non-root
+          agent execution, core privilege-escalation command denial, basic
+          sensitive-path protection, critical secret stripping, a narrow seccomp
+          syscall denylist, and default-deny domain egress. Remote-access
+          command denials and child-process network blocking are not included at
+          the Low baseline level.
+        runtime_targets:
+          - target: daytona-hardening-v1
+            capability_set: daytona-hardening-v1
+          - target: agentsh-policy-v1
+            capability_set: agentsh-policy-v1
+        fidelity_notes:
+          - Conservative approximation of selected usnistgov/linux_security Low baseline control groups.
+          - Intentionally the least restrictive tier; does not include remote-access or child-process network-blocking controls.
+          - Only enforced mappings targeting daytona-hardening-v1 compile into Daytona v1 hardening fields.
+          - AgentSH contributes catalog coverage for argument-aware privilege-shell command restrictions and operation-specific read/write path rules; the Terminal-Bench runner installs the operation-specific session policy, while standalone real AgentSH preflight probes AgentSH-owned rules.
+          - Live Daytona evidence collection remains outside this catalog package.
+        metadata:
+          source_policy_id: nist-linux-80053-high-derived
+          source_variant_id: high-derived-daytona-contract-v1
+          policy_label: NIST-derived Low benchmark policy
+          compliance_claim: none
+          compile_status_counts:
+            denominator: selected_runtime_mapping_items_in_this_variant
+            enforced: 11
+            approximate: 0
+            unsupported: 5
+            representation_only: 0
+            deferred: 0
+          coverage_disposition_counts:
+            denominator: selected_runtime_mapping_items_in_this_variant
+            enforced: 11
+            approximated: 0
+            metadata_only: 0
+            monitoring_only: 0
+            representation_only: 0
+            unsupported: 5
+            deferred: 0
+            not_relevant_to_daytona: 0
+        unsupported_features:
+          - surface: full_mac_enforcement
+            reason: usnistgov/linux_security includes SELinux/AppArmor-oriented controls outside Daytona v1 MAC capabilities.
+            missing_surface: SELinux/AppArmor policy compiler and runtime proof
+            verification_hint: Keep MAC controls unsupported until the runtime target can configure and prove them.
+          - surface: full_auditd_compliance_evidence
+            reason: The catalog can compile hardening fields but cannot collect auditd evidence or assessment records.
+            missing_surface: auditd collection, retention, and assessment evidence contract
+            verification_hint: Live evidence must be collected separately.
+          - surface: full_nist_compliance
+            reason: A benchmark hardening profile does not establish organizational control compliance.
+            missing_surface: complete control scope, assessment evidence, and authorization process
+            verification_hint: Use only NIST-derived benchmark hardening language for this policy.
+        rules:
+          - rule_id: enforce-core-privilege-escalation-denials-low
+            title: Enforce core privilege-escalation command denials (Low baseline)
+            description: >
+              Enforces only the most fundamental privilege-separation controls
+              at the Low baseline level: non-root execution plus denial of sudo,
+              su, and passwd. Package management and broader admin tools are not
+              denied at this tier, reflecting the Low baseline's narrower AC-6
+              and CM-7 scope.
+            intended_effect: Prevent direct privilege escalation while allowing broader system interaction at the Low baseline level.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AC-6
+                title: Least Privilege
+              - framework: NIST 800-53r5
+                control_id: CM-7
+                title: Least Functionality
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: non_root_user
+                status: enforced
+                values:
+                  - daytona
+                reason: Enforces Daytona execution as the non-root agent user for the benchmark runtime.
+                missing_surface: full user, group, capability, and privilege-transition policy
+                verification_hint: Probe id -u and whoami inside the hardened Daytona agent process.
+                metadata:
+                  source_control_fidelity: selected_least_privilege_runtime_projection
+              - target: daytona-hardening-v1
+                surface: command_name_denial
+                status: enforced
+                values:
+                  - passwd
+                  - su
+                  - sudo
+                reason: Enforces command-name denial for core privilege-escalation tools only. Low baseline does not deny package managers or broader admin tools.
+                missing_surface: argument-aware command and service/kernel state policy
+                verification_hint: Probe denied command names such as sudo and su in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_command_name_projection
+              - target: daytona-hardening-v1
+                surface: denied_exec_path
+                status: enforced
+                values:
+                  - /bin/su
+                  - /usr/bin/passwd
+                  - /usr/bin/su
+                  - /usr/bin/sudo
+                reason: Enforces denial for known Linux binary paths backing core privilege-escalation commands only.
+                missing_surface: complete cross-distribution executable inventory
+                verification_hint: Probe known executable paths such as /usr/bin/sudo and /bin/su in Daytona.
+                metadata:
+                  source_control_fidelity: approximate_known_path_projection
+              - target: agentsh-policy-v1
+                surface: argument_aware_command_restriction
+                status: enforced
+                values:
+                  - sudo -i
+                  - su -
+                reason: AgentSH command rules render args_patterns for privilege-escalation login-shell arguments.
+                missing_surface: broader privilege and service-state semantic validation remains represented separately.
+                verification_hint: Probe AgentSH args_patterns with sudo -i and su - commands.
+                metadata:
+                  source_control_fidelity: agentsh_argument_pattern_projection
+                  agentsh_policy_rules:
+                    - deny-privilege-shell-args
+              - target: daytona-hardening-v1
+                surface: kernel_sysctl_service_state
+                status: unsupported
+                values:
+                  - sysctl
+                  - systemctl
+                  - service
+                reason: Daytona v1 can deny commands but cannot verify kernel, sysctl, or service state.
+                missing_surface: kernel/sysctl/service-state policy and verifier
+                verification_hint: Do not infer state hardening from command-name or executable-path denial.
+          - rule_id: enforce-sensitive-path-and-secret-denials-low
+            title: Enforce sensitive path and secret denials (Low baseline)
+            description: >
+              Applies core Daytona v1 exact path denials and minimal
+              environment-variable stripping. The Low baseline protects only
+              critical authentication files and strips only the highest-risk
+              secret variables. Prefix denials and broader path coverage are
+              not included at this tier.
+            intended_effect: Protect core local authentication files and strip critical inherited secrets at the Low baseline level.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AC-6
+                title: Least Privilege
+              - framework: NIST 800-53r5
+                control_id: IA-5
+                title: Authenticator Management
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: denied_path_exact
+                status: enforced
+                values:
+                  - /etc/gshadow
+                  - /etc/shadow
+                  - /etc/sudoers
+                reason: Enforces exact path denial for core local credential and privileged authorization files.
+                missing_surface: operation-specific read/write policy and live file-state verification
+                verification_hint: Probe exact denied paths such as /etc/shadow and /etc/sudoers in Daytona.
+                metadata:
+                  source_control_fidelity: selected_sensitive_path_projection
+              - target: daytona-hardening-v1
+                surface: env_var_strip
+                status: enforced
+                values:
+                  - AWS_ACCESS_KEY_ID
+                  - AWS_SECRET_ACCESS_KEY
+                  - DAYTONA_API_KEY
+                  - OPENROUTER_API_KEY
+                reason: Enforces removal of critical inherited secret variables. Low baseline strips fewer variables than Medium/High.
+                missing_surface: complete secret discovery and runtime evidence collection
+                verification_hint: Probe runtime environment for stripped variables such as OPENROUTER_API_KEY and AWS_SECRET_ACCESS_KEY.
+                metadata:
+                  source_control_fidelity: selected_secret_environment_projection
+              - target: daytona-hardening-v1
+                surface: operation_specific_path_mode_policy
+                status: unsupported
+                values:
+                  - read-only exceptions
+                  - write-only restrictions
+                reason: Daytona v1 exact and prefix path denials are operation-neutral.
+                missing_surface: operation-specific read/write path mode policy
+                verification_hint: Do not infer read/write mode coverage from exact or prefix path denial.
+              - target: agentsh-policy-v1
+                surface: operation_specific_path_mode_policy
+                status: enforced
+                values:
+                  - /etc/gshadow
+                  - /etc/shadow
+                  - /etc/sudoers
+                reason: AgentSH file rules enforce read-mode denial for selected sensitive credential and authorization paths.
+                missing_surface: Daytona remains operation-neutral; full benchmark-time enforcement requires the agent to execute under AgentSH.
+                verification_hint: Probe read, open, stat, list, readlink, and access operations against the selected paths under AgentSH.
+                metadata:
+                  source_control_fidelity: agentsh_operation_specific_path_projection
+                  operation_mode: read
+                  operations:
+                    - read
+                    - open
+                    - stat
+                    - list
+                    - readlink
+                    - access
+                  write_guard: true
+                  agentsh_policy_rules:
+                    - deny-configured-read-paths
+                    - deny-configured-read-path-write-guard
+              - target: agentsh-policy-v1
+                surface: operation_specific_path_mode_policy
+                status: enforced
+                values:
+                  - /etc/sudoers
+                reason: AgentSH file rules enforce write-mode denial for selected privileged authorization paths.
+                missing_surface: Daytona remains operation-neutral; full benchmark-time enforcement requires the agent to execute under AgentSH.
+                verification_hint: Probe write, create, mkdir, symlink, chmod, chown, rename, link, refer, delete, and rmdir operations against the selected paths under AgentSH.
+                metadata:
+                  source_control_fidelity: agentsh_operation_specific_path_projection
+                  operation_mode: write
+                  operations:
+                    - write
+                    - create
+                    - mkdir
+                    - symlink
+                    - chmod
+                    - chown
+                    - rename
+                    - link
+                    - refer
+                    - delete
+                    - rmdir
+                  write_guard: false
+                  agentsh_policy_rules:
+                    - deny-configured-write-paths
+              - target: daytona-hardening-v1
+                surface: full_auditd_compliance_evidence
+                status: unsupported
+                values:
+                  - audit log configuration
+                  - evidence retention
+                reason: Environment stripping and path denial are hardening actions, not auditd evidence.
+                missing_surface: auditd/compliance evidence pipeline
+                verification_hint: Treat auditd evidence as unsupported until live evidence collection exists.
+          - rule_id: enforce-domain-egress-boundary-low
+            title: Enforce domain egress boundary and default CIDR denylist (Low baseline)
+            description: >
+              At the Low baseline level, remote-access command denial and
+              child-process network blocking are not enforced, while the
+              hardened-runtime default-deny domain boundary and CIDR guard still
+              apply. This rule compiles SC-7 boundary protection through the
+              repo-owned domain and CIDR egress primitives.
+            intended_effect: Block unallowlisted domains and default metadata, link-local, private, and direct public-IP bypass ranges.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: SC-7
+                title: Boundary Protection
+              - framework: NIST 800-53r5
+                control_id: SI-4
+                title: System Monitoring
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: domain_egress_policy
+                status: enforced
+                values:
+                  - default:deny
+                  - allow:api.openrouter.ai
+                  - allow:openrouter.ai
+                  - allow:*.openrouter.ai
+                reason: Enforces default-deny HTTP(S) domain egress through a controller-managed local proxy while blocking direct raw-IP bypass attempts through CIDR default-deny.
+                missing_surface: kernel-grade transparent domain firewall evidence
+                verification_hint: Probe denied domain requests for network_domain events and raw public-IP bypass attempts for network_cidr events.
+              - target: daytona-hardening-v1
+                surface: cidr_egress_policy
+                status: enforced
+                values:
+                  - 169.254.169.254/32
+                  - 169.254.0.0/16
+                  - 10.0.0.0/8
+                  - 172.16.0.0/12
+                  - 192.168.0.0/16
+                  - fe80::/10
+                  - fc00::/7
+                reason: Enforces the repo-owned default benchmark CIDR denylist for metadata, link-local, and private IP ranges.
+                missing_surface: kernel-grade egress firewall evidence
+                verification_hint: Probe direct socket connections to metadata and private IPs and require network_cidr policy events.
+          - rule_id: preserve-nist-derived-unsupported-surfaces-low
+            title: Preserve unsupported NIST-derived control surfaces (Low)
+            description: >
+              Keeps non-Daytona control classes explicit so downstream benchmark
+              work cannot mistake the runtime profile for full control coverage.
+            intended_effect: Record missing runtime surfaces and prevent silent conversion into fake hardening.
+            source_refs:
+              - framework: NIST 800-53r5
+                control_id: AU-2
+                title: Event Logging
+              - framework: NIST 800-53r5
+                control_id: CM-6
+                title: Configuration Settings
+            runtime_mappings:
+              - target: daytona-hardening-v1
+                surface: full_mac_enforcement
+                status: unsupported
+                values:
+                  - SELinux
+                  - AppArmor
+                reason: Daytona v1 does not configure Linux MAC profiles.
+                missing_surface: MAC policy compiler and live proof
+                verification_hint: Do not infer MAC behavior from command/path denials.
+              - target: daytona-hardening-v1
+                surface: seccomp_syscall_policy
+                status: enforced
+                values:
+                  - personality
+                reason: Enforces a narrow denylist for selected execution-personality syscall behavior only.
+                missing_surface: broad syscall allowlist and full kernel hardening profile
+                verification_hint: Probe denied syscalls such as personality in Daytona before claiming coverage.
+              - target: daytona-hardening-v1
+                surface: full_nist_compliance
+                status: unsupported
+                values:
+                  - complete Low baseline coverage
+                  - organizational assessment evidence
+                reason: This benchmark hardening profile does not establish organizational control compliance.
+                missing_surface: complete compliance scope, evidence, and assessment process
+                verification_hint: Use only NIST-derived partial benchmark hardening language for this policy.

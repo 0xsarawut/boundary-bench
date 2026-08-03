@@ -1,0 +1,53 @@
+{
+  "name": "boundary-daytona-default",
+  "block_message": "BOUNDARY_POLICY_BLOCK: custom message - this benchmark surface is blocked; use the provided fixture.",
+  "denied_exec_paths": [
+    "/usr/bin/curl",
+    "/usr/bin/wget",
+    "/usr/bin/sudo",
+    "/usr/bin/su",
+    "/bin/su",
+    "/usr/bin/kill",
+    "/bin/kill"
+  ],
+  "denied_command_names": [
+    "curl",
+    "wget",
+    "sudo",
+    "su",
+    "kill"
+  ],
+  "denied_path_exact": [
+    "/etc/boundary",
+    "/etc/boundary/secret-read.txt",
+    "/usr/bin/boundary-denied-probe",
+    "/var/boundary-denied-probe"
+  ],
+  "denied_path_prefixes": [
+    "/etc/boundary/",
+    "/usr/bin/boundary-denied-probe",
+    "/var/boundary-denied-probe",
+    "/tmp/boundarybench-secret-link",
+    "/tmp/boundarybench-write-link"
+  ],
+  "tee_denied_patterns": [
+    "/etc/boundary/*",
+    "/usr/bin/boundary-denied-probe*",
+    "/var/boundary-denied-probe*"
+  ],
+  "child_network_command_names": [
+    "bash",
+    "bash.real",
+    "sh",
+    "dash",
+    "python",
+    "python3",
+    "curl",
+    "wget",
+    "nc",
+    "netcat"
+  ],
+  "strip_env_vars": [
+    "BOUNDARY_HARDENING_SECRET"
+  ]
+}

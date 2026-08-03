@@ -1,0 +1,204 @@
+{
+  "artifact": "boundarybench",
+  "description": "Frozen provenance manifest for every evaluated model + agent-harness bundle. Each bundle was run under three policy levels (control; non-root; NIST-derived high = the high-nist preset), at reasoning effort high, with three trials per cell.",
+  "common": {
+    "reasoning_effort": "high",
+    "trials_per_cell": 3,
+    "policy_levels": ["control", "non-root", "high-nist"],
+    "policy_detail": {
+      "control": "Unhardened root baseline (no network/filesystem/privilege enforcement).",
+      "non-root": "Non-root user with a locked root account; no network or filesystem gates.",
+      "high-nist": "NIST-derived High tier: the high-nist preset (N5 fixed-trusted egress wall + F2 read-only rootfs + P2 privilege lockdown). This is the high tier; it resolves to the N5/F2/P2 point in the axis model."
+    },
+    "inference_route": {
+      "model_plane": "OpenRouter, reached through the in-sandbox loopback accounting proxy (single route for every harness).",
+      "vendor_health_endpoint_by_harness": {
+        "claude_code": "api.anthropic.com",
+        "codex": "chatgpt.com",
+        "grok": null,
+        "terminus_2": null
+      }
+    },
+    "harness_versions": {
+      "claude_code": "2.1.206",
+      "codex": "rust-v0.142.5",
+      "grok": "0.2.87",
+      "terminus_2": { "harbor": "0.13.1", "terminus": "2.0.0" }
+    }
+  },
+  "bundles": [
+    {
+      "marketing_name": "GPT-5.6 Sol",
+      "provider": "OpenAI",
+      "provider_model_id": "openai/gpt-5.6-sol",
+      "harness": "codex",
+      "harness_display": "Codex",
+      "harness_version": "rust-v0.142.5",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "GPT-5.6 Terra",
+      "provider": "OpenAI",
+      "provider_model_id": "openai/gpt-5.6-terra",
+      "harness": "codex",
+      "harness_display": "Codex",
+      "harness_version": "rust-v0.142.5",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "GPT-5.6 Luna",
+      "provider": "OpenAI",
+      "provider_model_id": "openai/gpt-5.6-luna",
+      "harness": "codex",
+      "harness_display": "Codex",
+      "harness_version": "rust-v0.142.5",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "Claude Sonnet 5",
+      "provider": "Anthropic",
+      "provider_model_id": "anthropic/claude-sonnet-5",
+      "harness": "claude_code",
+      "harness_display": "Claude Code",
+      "harness_version": "2.1.206",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "Claude Opus 4.8",
+      "provider": "Anthropic",
+      "provider_model_id": "anthropic/claude-opus-4.8",
+      "harness": "claude_code",
+      "harness_display": "Claude Code",
+      "harness_version": "2.1.206",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "Claude Fable 5",
+      "provider": "Anthropic",
+      "provider_model_id": "anthropic/claude-fable-5",
+      "harness": "claude_code",
+      "harness_display": "Claude Code",
+      "harness_version": "2.1.206",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"],
+      "vendor_fallback_model": "anthropic/claude-opus-4.8",
+      "note": "Anthropic's declared default vendor fallback for Claude Fable 5 is Claude Opus 4.8; the fallback is kept as configured, so requests that fall back are served by anthropic/claude-opus-4.8."
+    },
+    {
+      "marketing_name": "Claude Opus 5",
+      "provider": "Anthropic",
+      "provider_model_id": "anthropic/claude-opus-5",
+      "harness": "claude_code",
+      "harness_display": "Claude Code",
+      "harness_version": "2.1.220",
+      "harness_version_exception": true,
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"],
+      "note": "Version exception. Every other Claude Code bundle is pinned to 2.1.206. Claude Code 2.1.206 did not expose a correct anthropic/claude-opus-5 model identifier until 2.1.219; 2.1.220 (the next patch release) supplied it, so Opus 5 alone was evaluated on 2.1.220. Recorded here in the frozen experiment provenance."
+    },
+    {
+      "marketing_name": "Kimi K3",
+      "provider": "Moonshot AI",
+      "provider_model_id": "moonshotai/kimi-k3",
+      "harness": "terminus_2",
+      "harness_display": "Terminus-2",
+      "harness_version": { "harbor": "0.13.1", "terminus": "2.0.0" },
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "GLM-5.2",
+      "provider": "Z.ai",
+      "provider_model_id": "z-ai/glm-5.2",
+      "harness": "terminus_2",
+      "harness_display": "Terminus-2",
+      "harness_version": { "harbor": "0.13.1", "terminus": "2.0.0" },
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "Qwen3.7 Max",
+      "provider": "Alibaba Qwen",
+      "provider_model_id": "qwen/qwen3.7-max",
+      "harness": "terminus_2",
+      "harness_display": "Terminus-2",
+      "harness_version": { "harbor": "0.13.1", "terminus": "2.0.0" },
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "MiniMax M3",
+      "provider": "MiniMax",
+      "provider_model_id": "minimax/minimax-m3",
+      "harness": "terminus_2",
+      "harness_display": "Terminus-2",
+      "harness_version": { "harbor": "0.13.1", "terminus": "2.0.0" },
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    },
+    {
+      "marketing_name": "Grok 4.5",
+      "provider": "xAI",
+      "provider_model_id": "x-ai/grok-4.5",
+      "harness": "grok",
+      "harness_display": "Grok Build",
+      "harness_version": "0.2.87",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"]
+    }
+  ],
+  "ablation_crossings": [
+    {
+      "marketing_name": "GPT-5.6 Luna",
+      "provider": "OpenAI",
+      "provider_model_id": "openai/gpt-5.6-luna",
+      "harness": "grok",
+      "harness_display": "Grok Build",
+      "harness_version": "0.2.87",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"],
+      "crossing": "A model normally run under Codex, evaluated instead under the Grok Build harness, to isolate the harness contribution from the model."
+    },
+    {
+      "marketing_name": "Grok 4.5",
+      "provider": "xAI",
+      "provider_model_id": "x-ai/grok-4.5",
+      "harness": "codex",
+      "harness_display": "Codex",
+      "harness_version": "rust-v0.142.5",
+      "reasoning_effort": "high",
+      "trials_per_cell": 3,
+      "policy_levels": ["control", "non-root", "high-nist"],
+      "crossing": "A model normally run under the Grok Build harness, evaluated instead under Codex, completing the 2x2 harness-vs-model ablation with GPT-5.6 Luna."
+    }
+  ],
+  "provenance_sources": [
+    "Harness version pins in this repository: src/boundarybench/harness/claude_code.py (2.1.206), codex.py (rust-v0.142.5), grok.py (0.2.87), terminus_2.py (harbor 0.13.1 / terminus 2.0.0).",
+    "The reasoning-effort default (high) is enforced by every harness adapter (default_effort_level == 'high'), covered by tests/test_harness_adapter.py.",
+    "The high-nist preset definition is in src/boundarybench/daytona/policy_axes.py (resolved via src/boundarybench/terminalbench/policies.py).",
+    "Provider model IDs, per-bundle harness assignment, the Opus 5 version exception, and the Claude Fable 5 -> Claude Opus 4.8 vendor fallback are taken from the frozen campaign / runner registry."
+  ],
+  "provenance_notes": [
+    "Reasoning effort is high for every bundle and crossing (the evaluated configuration; the repository enforces high as every harness's test-locked default). The pre-standardization pareto campaign specifications in the runner registry recorded effort 'max' for the Claude Code bundles and the harness default for the Terminus-2 bundles; effort was standardized to high across all harnesses before the evaluated runs. See BUNDLES.md.",
+    "The two ablation crossings are defined by the roster; their provider model IDs and harness versions are verified from the sources above, but a dedicated campaign specification for the two crossings was not present in the registry file consulted (which enumerates the twelve pareto bundles).",
+    "Claude Fable 5's fallback constant (anthropic/claude-opus-4.8) is defined in the frozen runner registry, not in this repository's carved-down harness code."
+  ]
+}

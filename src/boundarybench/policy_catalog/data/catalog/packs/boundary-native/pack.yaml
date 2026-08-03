@@ -1,0 +1,1524 @@
+catalog_schema_version: 1
+pack_id: boundary-native
+title: BoundaryBench Native N×F×P Enforcement
+version: 1.0.0
+description: Native N×F×P enforcement claims for the shipped preset roster. Mechanically
+  generated from daytona/policy_axes.py (AXIS_PRESETS + runtime_mappings_for_preset);
+  see boundarybench.policy_catalog.native_pack.build_native_policy_pack.
+source:
+  framework: native/boundary
+  provenance_note: Generated from the native N×F×P single source of truth in daytona/policy_axes.py;
+    not derived from an external framework corpus. NIST control ids are cited per
+    surface as evidence anchors.
+  upstream_url: ''
+  upstream_commit: ''
+  immutable_revision: ''
+  inspected_date: ''
+  source_paths:
+  - src/boundarybench/daytona/policy_axes.py
+  metadata: {}
+policies:
+- policy_id: non-root
+  family: boundary-native-nxfxp
+  title: 'BoundaryBench native preset: non-root (n0-f0-p1)'
+  description: 'Sub-Low: non-root user + locked root, no network/filesystem gates
+    (AC-6).'
+  variants:
+  - variant_id: non-root-daytona-v1
+    title: non-root native enforcement (n0-f0-p1)
+    description: 'Sub-Low: non-root user + locked root, no network/filesystem gates
+      (AC-6).'
+    fidelity: runtime_enforced_partial
+    runtime_targets:
+    - target: daytona-hardening-v1
+      capability_set: daytona-hardening-v1
+      compiler_contract_version: daytona-hardening-compiler-v1
+      metadata: {}
+    unsupported_features: []
+    fidelity_notes: []
+    rules:
+    - rule_id: non-root.root_password_lock
+      title: Locked root, no sudoers entry
+      description: Locked root, no sudoers entry for the non-root preset (n0-f0-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Lock the root password and grant the agent user no sudo access.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: root_password_lock
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: 'root password is locked and the agent user is not in sudoers
+          (su: Authentication failure / not in the sudoers file).'
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    metadata:
+      tuple_id: n0-f0-p1
+      tier: sub-Low
+      compile_status_counts:
+        enforced: 1
+  metadata:
+    tuple_id: n0-f0-p1
+    tier: sub-Low
+- policy_id: low-nist
+  family: boundary-native-nxfxp
+  title: 'BoundaryBench native preset: low-nist (n1-f1-p1)'
+  description: 'NIST 800-53 Low: trusted-domain egress + read-only OS workspace +
+    non-root.'
+  variants:
+  - variant_id: low-nist-daytona-v1
+    title: low-nist native enforcement (n1-f1-p1)
+    description: 'NIST 800-53 Low: trusted-domain egress + read-only OS workspace
+      + non-root.'
+    fidelity: runtime_enforced_partial
+    runtime_targets:
+    - target: daytona-hardening-v1
+      capability_set: daytona-hardening-v1
+      compiler_contract_version: daytona-hardening-compiler-v1
+      metadata: {}
+    unsupported_features: []
+    fidelity_notes: []
+    rules:
+    - rule_id: low-nist.native_egress_reject
+      title: Native egress REJECT wall
+      description: Native egress REJECT wall for the low-nist preset (n1-f1-p1), enforced
+        natively via daytona-hardening-v1.
+      intended_effect: Deny egress that is not on the allowlist at the kernel/proxy
+        boundary.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: native_egress_reject
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: uid-scoped nftables REJECT wall is installed; off-allowlist
+          egress returns a bare 403 (proxy) or Connection refused (direct).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: low-nist.domain_egress_policy
+      title: Domain egress default-deny allowlist
+      description: Domain egress default-deny allowlist for the low-nist preset (n1-f1-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Permit only the resolved domain allowlist; deny all other domains.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: domain_egress_policy
+        status: enforced
+        values:
+        - deny
+        - trusted
+        reason: ''
+        missing_surface: ''
+        verification_hint: forced HTTP(S) proxy admits only the resolved allowlist;
+          off-allowlist hosts receive a bare 403.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: low-nist.cidr_egress_denylist
+      title: Direct-egress CIDR default-deny guard
+      description: Direct-egress CIDR default-deny guard for the low-nist preset (n1-f1-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Block direct connections to link-local and private CIDR ranges.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: cidr_egress_denylist
+        status: enforced
+        values:
+        - enabled
+        reason: ''
+        missing_surface: ''
+        verification_hint: direct-egress guard rejects the DEFAULT_CIDR_EGRESS_DENYLIST
+          ranges (metadata service, RFC1918, link-local).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: low-nist.writable_path_carveout_prefix
+      title: Read-only OS with workspace carveouts
+      description: Read-only OS with workspace carveouts for the low-nist preset (n1-f1-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Remount OS trees read-only, leaving only the workspace carveouts
+        writable.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-3
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-39
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: writable_path_carveout_prefix
+        status: enforced
+        values:
+        - /app/
+        - /dev/fd/
+        - /dev/shm/
+        - /home/daytona/
+        - /proc/self/fd/
+        - /tmp/
+        - /var/tmp/
+        - /workspace/
+        reason: ''
+        missing_surface: ''
+        verification_hint: OS trees are read-only bind-remounted; writes outside the
+          carveout prefixes return EROFS.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: low-nist.root_password_lock
+      title: Locked root, no sudoers entry
+      description: Locked root, no sudoers entry for the low-nist preset (n1-f1-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Lock the root password and grant the agent user no sudo access.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: root_password_lock
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: 'root password is locked and the agent user is not in sudoers
+          (su: Authentication failure / not in the sudoers file).'
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    metadata:
+      tuple_id: n1-f1-p1
+      tier: Low
+      compile_status_counts:
+        enforced: 5
+  metadata:
+    tuple_id: n1-f1-p1
+    tier: Low
+- policy_id: moderate-nist
+  family: boundary-native-nxfxp
+  title: 'BoundaryBench native preset: moderate-nist (n2-f1-p1)'
+  description: 'NIST 800-53 Moderate: per-task egress + read-only OS workspace + non-root.'
+  variants:
+  - variant_id: moderate-nist-daytona-v1
+    title: moderate-nist native enforcement (n2-f1-p1)
+    description: 'NIST 800-53 Moderate: per-task egress + read-only OS workspace +
+      non-root.'
+    fidelity: runtime_enforced_partial
+    runtime_targets:
+    - target: daytona-hardening-v1
+      capability_set: daytona-hardening-v1
+      compiler_contract_version: daytona-hardening-compiler-v1
+      metadata: {}
+    unsupported_features: []
+    fidelity_notes: []
+    rules:
+    - rule_id: moderate-nist.native_egress_reject
+      title: Native egress REJECT wall
+      description: Native egress REJECT wall for the moderate-nist preset (n2-f1-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Deny egress that is not on the allowlist at the kernel/proxy
+        boundary.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: native_egress_reject
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: uid-scoped nftables REJECT wall is installed; off-allowlist
+          egress returns a bare 403 (proxy) or Connection refused (direct).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: moderate-nist.domain_egress_policy
+      title: Domain egress default-deny allowlist
+      description: Domain egress default-deny allowlist for the moderate-nist preset
+        (n2-f1-p1), enforced natively via daytona-hardening-v1.
+      intended_effect: Permit only the resolved domain allowlist; deny all other domains.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: domain_egress_policy
+        status: enforced
+        values:
+        - deny
+        - model_plane
+        reason: ''
+        missing_surface: ''
+        verification_hint: forced HTTP(S) proxy admits only the resolved allowlist;
+          off-allowlist hosts receive a bare 403.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: moderate-nist.cidr_egress_denylist
+      title: Direct-egress CIDR default-deny guard
+      description: Direct-egress CIDR default-deny guard for the moderate-nist preset
+        (n2-f1-p1), enforced natively via daytona-hardening-v1.
+      intended_effect: Block direct connections to link-local and private CIDR ranges.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: cidr_egress_denylist
+        status: enforced
+        values:
+        - enabled
+        reason: ''
+        missing_surface: ''
+        verification_hint: direct-egress guard rejects the DEFAULT_CIDR_EGRESS_DENYLIST
+          ranges (metadata service, RFC1918, link-local).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: moderate-nist.writable_path_carveout_prefix
+      title: Read-only OS with workspace carveouts
+      description: Read-only OS with workspace carveouts for the moderate-nist preset
+        (n2-f1-p1), enforced natively via daytona-hardening-v1.
+      intended_effect: Remount OS trees read-only, leaving only the workspace carveouts
+        writable.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-3
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-39
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: writable_path_carveout_prefix
+        status: enforced
+        values:
+        - /app/
+        - /dev/fd/
+        - /dev/shm/
+        - /home/daytona/
+        - /proc/self/fd/
+        - /tmp/
+        - /var/tmp/
+        - /workspace/
+        reason: ''
+        missing_surface: ''
+        verification_hint: OS trees are read-only bind-remounted; writes outside the
+          carveout prefixes return EROFS.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: moderate-nist.root_password_lock
+      title: Locked root, no sudoers entry
+      description: Locked root, no sudoers entry for the moderate-nist preset (n2-f1-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Lock the root password and grant the agent user no sudo access.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: root_password_lock
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: 'root password is locked and the agent user is not in sudoers
+          (su: Authentication failure / not in the sudoers file).'
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    metadata:
+      tuple_id: n2-f1-p1
+      tier: Moderate
+      compile_status_counts:
+        enforced: 5
+  metadata:
+    tuple_id: n2-f1-p1
+    tier: Moderate
+- policy_id: high-nist
+  family: boundary-native-nxfxp
+  title: 'BoundaryBench native preset: high-nist (n5-f2-p2)'
+  description: 'NIST 800-53 High: fixed trusted egress + immutable rootfs + full
+    privilege lockdown.'
+  variants:
+  - variant_id: high-nist-daytona-v1
+    title: high-nist native enforcement (n5-f2-p2)
+    description: 'NIST 800-53 High: fixed trusted egress + immutable rootfs + full
+      privilege lockdown.'
+    fidelity: runtime_enforced_partial
+    runtime_targets:
+    - target: daytona-hardening-v1
+      capability_set: daytona-hardening-v1
+      compiler_contract_version: daytona-hardening-compiler-v1
+      metadata: {}
+    unsupported_features: []
+    fidelity_notes: []
+    rules:
+    - rule_id: high-nist.native_egress_reject
+      title: Native egress REJECT wall
+      description: Native egress REJECT wall for the high-nist preset (n5-f2-p2),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Deny egress that is not on the allowlist at the kernel/proxy
+        boundary.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: native_egress_reject
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: uid-scoped nftables REJECT wall is installed; off-allowlist
+          egress returns a bare 403 (proxy) or Connection refused (direct).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.domain_egress_policy
+      title: Domain egress default-deny allowlist
+      description: Domain egress default-deny allowlist for the high-nist preset
+        (n5-f2-p2), enforced natively via daytona-hardening-v1.
+      intended_effect: Permit only the resolved domain allowlist; deny all other domains.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: domain_egress_policy
+        status: enforced
+        values:
+        - deny
+        - trusted
+        reason: ''
+        missing_surface: ''
+        verification_hint: forced HTTP(S) proxy admits only the resolved allowlist;
+          off-allowlist hosts receive a bare 403.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.cidr_egress_denylist
+      title: Direct-egress CIDR default-deny guard
+      description: Direct-egress CIDR default-deny guard for the high-nist preset
+        (n5-f2-p2), enforced natively via daytona-hardening-v1.
+      intended_effect: Block direct connections to link-local and private CIDR ranges.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: cidr_egress_denylist
+        status: enforced
+        values:
+        - enabled
+        reason: ''
+        missing_surface: ''
+        verification_hint: direct-egress guard rejects the DEFAULT_CIDR_EGRESS_DENYLIST
+          ranges (metadata service, RFC1918, link-local).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.writable_path_carveout_prefix
+      title: Read-only OS with workspace carveouts
+      description: Read-only OS with workspace carveouts for the high-nist preset
+        (n5-f2-p2), enforced natively via daytona-hardening-v1.
+      intended_effect: Remount OS trees read-only, leaving only the workspace carveouts
+        writable.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-3
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-39
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4(4)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(21)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: writable_path_carveout_prefix
+        status: enforced
+        values:
+        - /app/
+        - /dev/fd/
+        - /dev/shm/
+        - /proc/self/fd/
+        - /tmp/
+        - /var/tmp/
+        - /workspace/
+        reason: ''
+        missing_surface: ''
+        verification_hint: OS trees are read-only bind-remounted; writes outside the
+          carveout prefixes return EROFS.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.read_only_root_filesystem
+      title: Immutable root filesystem
+      description: Immutable root filesystem for the high-nist preset (n5-f2-p2),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Freeze the whole root filesystem, including the home tree.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-3
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-39
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4(4)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(21)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: read_only_root_filesystem
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: the root filesystem (incl. home) is read-only; writes return
+          EROFS.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.root_password_lock
+      title: Locked root, no sudoers entry
+      description: Locked root, no sudoers entry for the high-nist preset (n5-f2-p2),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Lock the root password and grant the agent user no sudo access.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(3)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: root_password_lock
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: 'root password is locked and the agent user is not in sudoers
+          (su: Authentication failure / not in the sudoers file).'
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.no_new_privileges
+      title: no_new_privs on the agent process
+      description: no_new_privs on the agent process for the high-nist preset (n5-f2-p2),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Prevent privilege gain through execve on the agent process
+        tree.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(3)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: no_new_privileges
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: no_new_privs is set; setuid/setgid escalation returns EPERM.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.capability_bounding_drop
+      title: Emptied capability bounding set
+      description: Emptied capability bounding set for the high-nist preset (n5-f2-p2),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Drop the capability bounding set so dropped capabilities cannot
+        be regained.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(3)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: capability_bounding_drop
+        status: enforced
+        values:
+        - all
+        reason: ''
+        missing_surface: ''
+        verification_hint: the capability bounding set is empty; privileged operations
+          return EPERM.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: high-nist.setuid_bit_strip
+      title: Stripped setuid bits
+      description: Stripped setuid bits for the high-nist preset (n5-f2-p2), enforced
+        natively via daytona-hardening-v1.
+      intended_effect: Strip setuid bits from on-disk binaries to close setuid escalation
+        paths.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(3)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: setuid_bit_strip
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: setuid bits are stripped from binaries; escalation via
+          setuid returns EPERM.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    metadata:
+      tuple_id: n5-f2-p2
+      tier: High
+      compile_status_counts:
+        enforced: 9
+  metadata:
+    tuple_id: n5-f2-p2
+    tier: High
+- policy_id: netlock
+  family: boundary-native-nxfxp
+  title: 'BoundaryBench native preset: netlock (n2-f0-p1)'
+  description: 'Network-isolation study: per-task egress with an open filesystem (isolates
+    N).'
+  variants:
+  - variant_id: netlock-daytona-v1
+    title: netlock native enforcement (n2-f0-p1)
+    description: 'Network-isolation study: per-task egress with an open filesystem
+      (isolates N).'
+    fidelity: runtime_enforced_partial
+    runtime_targets:
+    - target: daytona-hardening-v1
+      capability_set: daytona-hardening-v1
+      compiler_contract_version: daytona-hardening-compiler-v1
+      metadata: {}
+    unsupported_features: []
+    fidelity_notes: []
+    rules:
+    - rule_id: netlock.native_egress_reject
+      title: Native egress REJECT wall
+      description: Native egress REJECT wall for the netlock preset (n2-f0-p1), enforced
+        natively via daytona-hardening-v1.
+      intended_effect: Deny egress that is not on the allowlist at the kernel/proxy
+        boundary.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: native_egress_reject
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: uid-scoped nftables REJECT wall is installed; off-allowlist
+          egress returns a bare 403 (proxy) or Connection refused (direct).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: netlock.domain_egress_policy
+      title: Domain egress default-deny allowlist
+      description: Domain egress default-deny allowlist for the netlock preset (n2-f0-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Permit only the resolved domain allowlist; deny all other domains.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: domain_egress_policy
+        status: enforced
+        values:
+        - deny
+        - model_plane
+        reason: ''
+        missing_surface: ''
+        verification_hint: forced HTTP(S) proxy admits only the resolved allowlist;
+          off-allowlist hosts receive a bare 403.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: netlock.cidr_egress_denylist
+      title: Direct-egress CIDR default-deny guard
+      description: Direct-egress CIDR default-deny guard for the netlock preset (n2-f0-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Block direct connections to link-local and private CIDR ranges.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(8)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: cidr_egress_denylist
+        status: enforced
+        values:
+        - enabled
+        reason: ''
+        missing_surface: ''
+        verification_hint: direct-egress guard rejects the DEFAULT_CIDR_EGRESS_DENYLIST
+          ranges (metadata service, RFC1918, link-local).
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: netlock.root_password_lock
+      title: Locked root, no sudoers entry
+      description: Locked root, no sudoers entry for the netlock preset (n2-f0-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Lock the root password and grant the agent user no sudo access.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: root_password_lock
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: 'root password is locked and the agent user is not in sudoers
+          (su: Authentication failure / not in the sudoers file).'
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    metadata:
+      tuple_id: n2-f0-p1
+      tier: isolation
+      compile_status_counts:
+        enforced: 4
+  metadata:
+    tuple_id: n2-f0-p1
+    tier: isolation
+- policy_id: fslock
+  family: boundary-native-nxfxp
+  title: 'BoundaryBench native preset: fslock (n0-f2-p1)'
+  description: 'Filesystem-isolation study: immutable rootfs with open egress (isolates
+    F).'
+  variants:
+  - variant_id: fslock-daytona-v1
+    title: fslock native enforcement (n0-f2-p1)
+    description: 'Filesystem-isolation study: immutable rootfs with open egress (isolates
+      F).'
+    fidelity: runtime_enforced_partial
+    runtime_targets:
+    - target: daytona-hardening-v1
+      capability_set: daytona-hardening-v1
+      compiler_contract_version: daytona-hardening-compiler-v1
+      metadata: {}
+    unsupported_features: []
+    fidelity_notes: []
+    rules:
+    - rule_id: fslock.writable_path_carveout_prefix
+      title: Read-only OS with workspace carveouts
+      description: Read-only OS with workspace carveouts for the fslock preset (n0-f2-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Remount OS trees read-only, leaving only the workspace carveouts
+        writable.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-3
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-39
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4(4)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(21)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: writable_path_carveout_prefix
+        status: enforced
+        values:
+        - /app/
+        - /dev/fd/
+        - /dev/shm/
+        - /proc/self/fd/
+        - /tmp/
+        - /var/tmp/
+        - /workspace/
+        reason: ''
+        missing_surface: ''
+        verification_hint: OS trees are read-only bind-remounted; writes outside the
+          carveout prefixes return EROFS.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: fslock.read_only_root_filesystem
+      title: Immutable root filesystem
+      description: Immutable root filesystem for the fslock preset (n0-f2-p1), enforced
+        natively via daytona-hardening-v1.
+      intended_effect: Freeze the whole root filesystem, including the home tree.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-3
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-39
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-4
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-4(4)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: SC-7(21)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: CM-5(1)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: read_only_root_filesystem
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: the root filesystem (incl. home) is read-only; writes return
+          EROFS.
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    - rule_id: fslock.root_password_lock
+      title: Locked root, no sudoers entry
+      description: Locked root, no sudoers entry for the fslock preset (n0-f2-p1),
+        enforced natively via daytona-hardening-v1.
+      intended_effect: Lock the root password and grant the agent user no sudo access.
+      source_refs:
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(2)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(5)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      - framework: NIST SP 800-53 Rev. 5
+        control_id: AC-6(10)
+        title: ''
+        url: ''
+        path: ''
+        metadata: {}
+      runtime_mappings:
+      - target: daytona-hardening-v1
+        surface: root_password_lock
+        status: enforced
+        values:
+        - 'true'
+        reason: ''
+        missing_surface: ''
+        verification_hint: 'root password is locked and the agent user is not in sudoers
+          (su: Authentication failure / not in the sudoers file).'
+        metadata: {}
+      unsupported_features: []
+      verification_hints: []
+      fidelity_notes: []
+      metadata: {}
+    metadata:
+      tuple_id: n0-f2-p1
+      tier: isolation
+      compile_status_counts:
+        enforced: 3
+  metadata:
+    tuple_id: n0-f2-p1
+    tier: isolation
+metadata:
+  generator: boundarybench.policy_catalog.native_pack:build_native_policy_pack
+  excluded_presets:
+  - control

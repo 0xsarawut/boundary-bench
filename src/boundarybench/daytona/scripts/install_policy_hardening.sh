@@ -1,0 +1,63 @@
+# DO NOT DELETE — retained unwired for the future old(steering)-vs-new(native) philosophy A/B benchmark
+set -euo pipefail
+mkdir -p __ASSET_DIR__
+mkdir -p __POLICY_BIN_DIR__
+chmod 0711 __ASSET_DIR__
+chmod 0711 __POLICY_BIN_DIR__
+cat > __C_SOURCE_PATH__ <<'EOF'
+__PRELOAD_C_SOURCE__
+EOF
+chmod 0600 __C_SOURCE_PATH__
+gcc -shared -fPIC -O2 -Wall -Wextra -o __POLICY_MESSAGE_PRELOAD_SO__ __C_SOURCE_PATH__ -ldl
+test -f __POLICY_MESSAGE_PRELOAD_SO__
+rm -f __C_SOURCE_PATH__
+chmod 0555 __POLICY_MESSAGE_PRELOAD_SO__
+if [ "__LANDLOCK_ENABLED__" = "1" ]; then
+cat > __LANDLOCK_C_SOURCE_PATH__ <<'EOF'
+__LANDLOCK_C_SOURCE__
+EOF
+  chmod 0600 __LANDLOCK_C_SOURCE_PATH__
+  gcc -O2 -Wall -Wextra -o __LANDLOCK_MAC_RUNNER__ __LANDLOCK_C_SOURCE_PATH__
+  test -x __LANDLOCK_MAC_RUNNER__
+  rm -f __LANDLOCK_C_SOURCE_PATH__
+  chmod 0555 __LANDLOCK_MAC_RUNNER__
+else
+  rm -f __LANDLOCK_C_SOURCE_PATH__ __LANDLOCK_MAC_RUNNER__
+fi
+if [ "__SECCOMP_ENABLED__" = "1" ]; then
+  cat > __SECCOMP_SOURCE_PATH__ <<'EOF'
+__SECCOMP_C_SOURCE__
+EOF
+  chmod 0600 __SECCOMP_SOURCE_PATH__
+  gcc -O2 -Wall -Wextra -o __SECCOMP_LAUNCHER_PATH__ __SECCOMP_SOURCE_PATH__ -lseccomp
+  test -f __SECCOMP_LAUNCHER_PATH__
+  rm -f __SECCOMP_SOURCE_PATH__
+  chmod 0555 __SECCOMP_LAUNCHER_PATH__
+else
+  rm -f __SECCOMP_LAUNCHER_PATH__ __SECCOMP_SOURCE_PATH__
+fi
+mount_path="$(command -v mount || true)"
+test -n "$mount_path"
+cp -f "$mount_path" __MOUNT_REAL_PATH__
+chmod 0555 __MOUNT_REAL_PATH__
+cat > __BLOCK_MESSAGE_COMMAND__ <<'EOF'
+__DENY_COMMAND_SCRIPT__
+EOF
+chmod 0555 __BLOCK_MESSAGE_COMMAND__
+__COMMAND_NAME_SHIMS__
+cat > __TEE_SHIM_PATH__ <<'EOF'
+__TEE_SHIM_SCRIPT__
+EOF
+chmod 0555 __TEE_SHIM_PATH__
+cat > __CHILD_NETWORK_BLOCK_ENV__ <<'EOF'
+__CHILD_NETWORK_BLOCK_ENV_SCRIPT__
+EOF
+chmod 0444 __CHILD_NETWORK_BLOCK_ENV__
+cat > __DOMAIN_EGRESS_PROXY_PATH__ <<'EOF'
+__DOMAIN_EGRESS_PROXY_SCRIPT__
+EOF
+chmod 0555 __DOMAIN_EGRESS_PROXY_PATH__
+cat > __DOMAIN_EGRESS_CONFIG_PATH__ <<'EOF'
+__DOMAIN_EGRESS_PROXY_CONFIG__
+EOF
+chmod 0444 __DOMAIN_EGRESS_CONFIG_PATH__

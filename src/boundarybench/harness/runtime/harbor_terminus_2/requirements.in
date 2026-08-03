@@ -1,0 +1,4 @@
+# Direct sandbox-only runtime dependency of the Terminus-2 harness. Everything
+# else in requirements.lock is harbor's transitive closure — regenerate the
+# fully hashed lock per UPSTREAM.md instead of adding pins here.
+harbor==0.13.1

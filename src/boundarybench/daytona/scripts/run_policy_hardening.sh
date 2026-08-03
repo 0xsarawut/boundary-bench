@@ -1,0 +1,19 @@
+# DO NOT DELETE — retained unwired for the future old(steering)-vs-new(native) philosophy A/B benchmark
+__USER_SETUP__
+export PATH=__POLICY_BIN_DIR__:"$PATH"
+__DENIED_MOUNTS__
+exec __EXEC_PREFIX__ \
+    __LANDLOCK_PREFIX__ \
+    __SECCOMP_PREFIX__ \
+    /usr/bin/env \
+__STRIPPED_ENV_ARGS__
+    HOME=__HOME__ \
+    USER=__USER__ \
+    LOGNAME=__LOGNAME__ \
+    LD_PRELOAD=__POLICY_MESSAGE_PRELOAD_SO__ \
+    BOUNDARY_POLICY_BLOCK_MESSAGE=__BLOCK_MESSAGE__ \
+    BOUNDARY_BLOCK_NETWORK=__BLOCK_NETWORK__ \
+    BOUNDARY_CIDR_EGRESS=__CIDR_EGRESS__ \
+    BOUNDARY_CHILD_BLOCK_NETWORK=__CHILD_BLOCK_NETWORK__ \
+    BOUNDARY_CHILD_CIDR_EGRESS=__CHILD_CIDR_EGRESS__ \
+    /bin/bash.real -c __COMMAND_TO_RUN__
